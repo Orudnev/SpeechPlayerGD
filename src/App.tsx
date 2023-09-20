@@ -24,7 +24,7 @@ function App() {
   return ( 
     <div> 
       <Routes>
-        <Route path={"/"} element={<div>Main Page</div>} />
+        <Route path={"/SpeechPlayerGD"} element={<div>Main Page</div>} />
       </Routes>
     </div> 
     );
