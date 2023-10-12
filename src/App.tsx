@@ -10,7 +10,7 @@ import {
 import './App.css';
 import { AppSessionData, TAppSettigs } from './Components/AppData';
 import {store,TAllActions,IAppState} from './Reducers/index';
-import {SpeechRecognizer} from './Components/SpeechRecognizer';
+import {SpeechRecognizer, SRResultAlternative, TResultHandler} from './Components/SpeechRecognizer';
 
 
 
@@ -59,6 +59,14 @@ const Lesson1 = ()=>{
   var handleClick = ()=>{
     SpeechRecognizer.start();
   }
+  let resultHndlr:TResultHandler = (results)=>{
+    results.forEach(r=>{
+      r.forEach(rr=>{
+        console.log(rr.transcript);
+      })
+    })
+  }
+  SpeechRecognizer.subscribeOnResult(resultHndlr);
   return (
     <div onClick={()=>handleClick()}>Lesson1</div>
   );
