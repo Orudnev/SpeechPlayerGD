@@ -18,9 +18,9 @@ class SpeechRecognizerClass {
     constructor(){
         this.recEngineInstance = new speechRecognition();
         this.recEngineInstance.continuous = true;
-        this.recEngineInstance.interimResults = false;//Обработка промежуточных результатов
+        this.recEngineInstance.interimResults = true;//Обработка промежуточных результатов
         this.recEngineInstance.maxAlternatives = 3;//Максимальное число альтернатив распознанного слова
-        this.recEngineInstance.lang = 'ru-RU';
+        this.recEngineInstance.lang = 'en-US';
         this.Status = "Stopped";
         this.handleStart = this.handleStart.bind(this);
         this.handleEnd = this.handleEnd.bind(this);
@@ -31,18 +31,21 @@ class SpeechRecognizerClass {
         this.recEngineInstance.onresult = this.handleResult;
         this.recEngineInstance.onerror = this.handleError;
     }
+
     subscribeOnResult(newHandler:TResultHandler){
         this.ResultHandlers.push(newHandler);
     }
     
     handleStart(){
-        console.log('Распознавание голоса запущено')
+        console.log('Speech recognition started')
         this.Status = "Started";
     }
+
     handleEnd(){
         console.log('handleEnd');
         if(this.Status === "Stopping"){
             this.Status = "Stopped";
+            console.log('Speech recognition stopped')
             return;
         }
         this.recEngineInstance.start();
@@ -71,6 +74,7 @@ class SpeechRecognizerClass {
         }
         this.ResultHandlers.forEach(hndlr=>hndlr(results));
     }
+
     handleError(e:any){
         console.log(e);
     }
@@ -79,12 +83,11 @@ class SpeechRecognizerClass {
         this.Status = "Starting";
         this.recEngineInstance.start();
     }
+
     stop(){
         this.Status = "Stopping";
         this.recEngineInstance.stop();
     }
-
-
 }
 
 export const SpeechRecognizer = new SpeechRecognizerClass();
