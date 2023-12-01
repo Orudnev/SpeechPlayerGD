@@ -22,8 +22,14 @@ const voiceCommands:IVoiceCommand[] = [
 
 class SRResultCmdDetectorClass implements ICommandDetector{
     commandModeActivationPhrases = ["google","coco","go go"];
+    commandExecutionHandler:(()=>void)|undefined;
+
     constructor(){
         SRResultComparer.connectCommandDetector(this);
+    }
+
+    registerHandler(handler:()=>void){
+        this.commandExecutionHandler = handler;
     }
 
     hasVoiceCommand(sourceText:string, cmdId:TVoiceCommand):boolean{
@@ -83,7 +89,9 @@ class SRResultCmdDetectorClass implements ICommandDetector{
         let cmd = this.getCommand(results);
         if(cmd){
             SRResultComparer.stopComparison();
-            //2do отправить на командный процессор
+            if(this.commandExecutionHandler){
+                this.commandExecutionHandler();
+            }
         }
     }
 }

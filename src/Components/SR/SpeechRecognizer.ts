@@ -1,4 +1,5 @@
 import { type } from "os";
+import { TLanguage } from "../../CommonTypes";
 
 //@ts-ignore
 const speechRecognition  = webkitSpeechRecognition || SpeechRecognition;
@@ -79,7 +80,8 @@ class SpeechRecognizerClass {
         console.log(e);
     }
 
-    start(){
+    start(lang:TLanguage){
+        this.recEngineInstance.lang = lang;
         this.Status = "Starting";
         this.recEngineInstance.start();
     }
