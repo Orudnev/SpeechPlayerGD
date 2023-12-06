@@ -18,9 +18,8 @@ export function ColorWords({text,wordStatuses}:{text:string,wordStatuses:boolean
       let itmJsx = <ColorWord key={'cwrd'+index} wrdText={itm} isHilighted={wordStatuses[index]} />
       wordsJsx.push(itmJsx);
     });
-    console.log("@@@");
     return(
-      <div>
+      <div> 
         {wordsJsx}
       </div>
     );

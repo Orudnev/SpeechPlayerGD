@@ -25,7 +25,7 @@ export class PhraseMemorizer extends React.Component<any,IPhraseMemorizerState>{
 
     componentDidMount(): void {
         let itemlist:IItem[] = [
-            {q:{lang:'en-US',text:'Waterfall'},a:{lang:'ru-RU',text:'водопад'}},
+            {q:{lang:'en-US',text:'red roses too'},a:{lang:'ru-RU',text:'красные розы тоже'}},
             {q:{lang:'en-US',text:'apple'},a:{lang:'ru-RU',text:'яблоко'}},
             {q:{lang:'en-US',text:'cucumber'},a:{lang:'ru-RU',text:'кукумбер'}}
         ];
@@ -33,14 +33,30 @@ export class PhraseMemorizer extends React.Component<any,IPhraseMemorizerState>{
     }
 
     componentDidUpdate(prevProps: Readonly<any>, prevState: Readonly<IPhraseMemorizerState>, snapshot?: any): void {
-        if(this.state.status === 'SayQuestion'){
-            this.sayQuestion();        
-        }
-        if(this.state.status === 'WaitAnswer'){
-            let itm = this.getSelectedItem();
-            if(itm){
-                SRResultComparer.startNewComparison(itm.a.text,itm.a.lang, 20000, this.handleComparisonProgress);
+        if(prevState.status !== this.state.status){
+            console.log("*** Status: "+this.state.status);
+            if(this.state.status === 'SayQuestion'){
+                this.sayQuestion();                        
             }
+            if(this.state.status === 'WaitAnswerToBeStarted'){
+                let itm = this.getSelectedItem();
+                if(itm){
+                    SRResultComparer.startNewComparison(itm.a.text,itm.a.lang, 10000, this.handleComparisonProgress);
+                }
+                this.setState({status:'WaitAnswerInProcess'});
+                return;
+            }
+            if(this.state.status === 'WaitNextItem'){
+                console.log("go next item");
+                this.goNextItem();    
+                return;
+            }    
+        }
+        if(this.state.status === 'WaitAnswerInProcess'){
+            if(SRResultComparer.cmpStatus === 'Success' || SRResultComparer.cmpStatus === 'TimeoutElapsed'){
+                console.log("* Success *");
+                this.setState({status: 'WaitNextItem'});
+            }    
         }
     }
 
@@ -50,33 +66,33 @@ export class PhraseMemorizer extends React.Component<any,IPhraseMemorizerState>{
         }
     }
 
-    getWordStatuses(){
-        if(this.state.status === 'WaitAnswer'){
-            let itm = this.getSelectedItem();
-            if(itm){
-                SRResultComparer.startNewComparison(itm.a.text,itm.a.lang, 20000, this.handleComparisonProgress);
-            }
-        } 
-        return [];
-    }
+    // getWordStatuses(){
+    //     if(this.state.status === 'WaitAnswer'){
+    //         let itm = this.getSelectedItem();
+    //         if(itm){
+    //             SRResultComparer.startNewComparison(itm.a.text,itm.a.lang, 20000, this.handleComparisonProgress);
+    //         }
+    //     } 
+    //     return [];
+    // }
 
     handleComparisonProgress(){
         let s = SRResultComparer.getWrdCmpResult();
-        console.log(JSON.stringify(s));
+        console.log(JSON.stringify(s), SRResultComparer.cmpStatus);
         this.setState({cmpWordsResult:s});
     }
 
 
     goNextItem(){
         let newIndex = this.state.selectedItemIndex+1;
-        this.setState({selectedItemIndex:newIndex, status:'SayQuestion'});
+        this.setState({selectedItemIndex:newIndex, status:'SayQuestion',cmpWordsResult:[]});
     }
 
     sayQuestion(){
         let itm = this.getSelectedItem();
         if(itm){
             SayText.addMessage(itm.q,()=>{
-                this.setState({status:'WaitAnswer'});
+                this.setState({status:'WaitAnswerToBeStarted'});
             });            
         }
     }

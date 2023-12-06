@@ -9,10 +9,12 @@ class SRResultComparerClass{
     pcLimit:number = 90;
     handleChangeResult:(()=>void)|null = null;
     cmpStatus:TCmpStatus = "Undefined";
+    cmpPrevStatus:TCmpStatus = "Undefined";
     currentMaxPercentOfMatches = 0;
     commandDetector:ICommandDetector|null = null;
     wordCmpResult:boolean[] = []; //item[i] === true means that word[i] is matched, were i - word index from etalonText string
     wordCmpPrevResult:boolean[] = [];
+    timer:any = undefined;
 
     constructor(){
         this.processResult = this.processResult.bind(this);
@@ -24,8 +26,13 @@ class SRResultComparerClass{
         this.commandDetector = cmdDetector;
     }
 
+    setNewCmpStatus(newStatus:TCmpStatus){
+        this.cmpPrevStatus = this.cmpStatus;
+        this.cmpStatus = newStatus;
+    }
+
     startNewComparison(text:string,lang:TLanguage,timeout:number,onChangeResultHandler:()=>void){
-        this.cmpStatus = "Processing";
+        this.setNewCmpStatus("Processing");
         this.currentMaxPercentOfMatches = 0;
         this.etalonText = text;
         let words = this.etalonText.split(" ");
@@ -33,16 +40,17 @@ class SRResultComparerClass{
         this.wordCmpPrevResult = [];
         this.handleChangeResult = onChangeResultHandler;
         SpeechRecognizer.start(lang);
-        setTimeout(this.onTimeoutElapsed,timeout);
+        this.timer = setTimeout(this.onTimeoutElapsed,timeout);
     }
 
     stopComparison(){
+        clearTimeout(this.timer);
         this.handleChangeResult = null;
         SpeechRecognizer.stop();
     }
 
     onTimeoutElapsed(){
-        this.cmpStatus = "TimeoutElapsed";
+        this.setNewCmpStatus("TimeoutElapsed");
         this.invokeChangeResultHandler();
         this.stopComparison();
     }
@@ -59,9 +67,14 @@ class SRResultComparerClass{
     }
 
     invokeChangeResultHandler(){
+        if(this.cmpStatus === "Success"){
+            console.log("*** Success ***")
+        }        
         if(this.handleChangeResult){
-            if(this.iswrdResultsChanged()){
+            if(this.iswrdResultsChanged() || this.cmpStatus != this.cmpPrevStatus){
+                console.log("invoke this.handleChangeResult",this.cmpStatus)
                 this.handleChangeResult();
+                this.cmpPrevStatus = this.cmpStatus;
             }
             this.wordCmpPrevResult = [...this.wordCmpResult];
         }
@@ -70,17 +83,14 @@ class SRResultComparerClass{
         }
     }
 
-
-
     processResult(results:Array<Array<SRResultAlternative>>){
-        console.log("***");
         if(this.cmpStatus === "Success" || this.cmpStatus === "TimeoutElapsed"){
             return;
         }
         if(this.commandDetector){
             if(this.cmpStatus !== "CommandMode"){
                 if(this.commandDetector.hasCmdActivatorPhrase(results)){
-                    this.cmpStatus = "CommandMode";
+                    this.setNewCmpStatus("CommandMode");
                 }        
             }
             if(this.cmpStatus === "CommandMode"){
@@ -126,7 +136,7 @@ class SRResultComparerClass{
                 this.currentMaxPercentOfMatches = matchedPercent;
             }
             if(matchedPercent>=this.pcLimit){
-                this.cmpStatus = "Success";
+                this.setNewCmpStatus("Success");
                 return
             }
         }

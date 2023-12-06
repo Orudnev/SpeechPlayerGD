@@ -73,7 +73,11 @@ class SpeechRecognizerClass {
                 }
             }
         }
-        this.ResultHandlers.forEach(hndlr=>hndlr(results));
+        try{
+            this.ResultHandlers.forEach(hndlr=>hndlr(results));
+        } catch(error){
+            let s=1;
+        }
     }
 
     handleError(e:any){
@@ -81,9 +85,15 @@ class SpeechRecognizerClass {
     }
 
     start(lang:TLanguage){
-        this.recEngineInstance.lang = lang;
-        this.Status = "Starting";
-        this.recEngineInstance.start();
+        if(this.Status === 'Idle' || this.Status==='Stopped' || this.Status === 'Unknown'){
+            this.recEngineInstance.lang = lang;
+            this.Status = "Starting";
+            this.recEngineInstance.start();    
+        } else {
+            setTimeout(() => {
+                //this.start(lang);
+            }, 1000);
+        }
     }
 
     stop(){
