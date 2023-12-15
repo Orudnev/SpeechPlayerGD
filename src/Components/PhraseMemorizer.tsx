@@ -2,6 +2,7 @@ import React, { useReducer, useEffect, useState } from 'react';
 import { IItem, TPlayerStatus } from '../CommonTypes';
 import { ColorWords } from './ColorWords';
 import { SayText } from './SayText';
+import SRResultCmdDetector, { TVoiceCommand } from './SR/SRResultCmdDetector';
 import SRResultComparer from './SR/SRResultComparer';
 export interface IPhraseMemorizerState{
     items:IItem[]; 
@@ -21,6 +22,8 @@ export class PhraseMemorizer extends React.Component<any,IPhraseMemorizerState>{
             cmpWordsResult:[]
         }
         this.handleComparisonProgress = this.handleComparisonProgress.bind(this);
+        this.onVoiceCommandDetected = this.onVoiceCommandDetected.bind(this);
+        SRResultCmdDetector.registerHandler(this.onVoiceCommandDetected);
     }
 
     componentDidMount(): void {
@@ -30,6 +33,12 @@ export class PhraseMemorizer extends React.Component<any,IPhraseMemorizerState>{
             {q:{lang:'en-US',text:'cucumber'},a:{lang:'ru-RU',text:'кукумбер'},r:undefined}
         ];
         this.setState({items:itemlist});
+    }
+
+    onVoiceCommandDetected(cmd:TVoiceCommand){
+        if(cmd === 'GoNextItem'){
+            this.setState({status:'WaitNextItem'});
+        }
     }
 
     componentDidUpdate(prevProps: Readonly<any>, prevState: Readonly<IPhraseMemorizerState>, snapshot?: any): void {
@@ -62,6 +71,8 @@ export class PhraseMemorizer extends React.Component<any,IPhraseMemorizerState>{
                 this.setState({status: 'AnswerIsFailed'});
                 setTimeout(()=>{this.setState({status:"WaitNextItem"})},1000);
                 this.setItemResult(false);
+            }
+            if(SRResultComparer.cmpStatus === 'CommandMode'){
             }
         }
     }

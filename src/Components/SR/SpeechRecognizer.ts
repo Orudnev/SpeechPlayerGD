@@ -52,7 +52,7 @@ class SpeechRecognizerClass {
         this.recEngineInstance.start();
     } 
     handleResult(e:any){
-        let results:Array<Array<SRResultAlternative>> = [];
+        let results:Array<Array<SRResultAlternative>> = [];        
         if(e.results && e.results.length>0){
             for(let key in e.results){
                 if(key === 'length'){
