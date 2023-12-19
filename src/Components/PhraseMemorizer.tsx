@@ -37,6 +37,7 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
 
     onVoiceCommandDetected(cmd: TVoiceCommand) {
         if (cmd === 'GoNextItem') {
+            this.setItemResult(false);
             this.setState({ status: 'WaitNextItem' });
             console.log("WaitNextItem");
         }
@@ -57,7 +58,7 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
                 return;
             }
             if (this.state.status === 'WaitNextItem') {
-                console.log("go next item");
+                //console.log("go next item");
                 this.goNextItem();
                 return;
             }
@@ -105,9 +106,13 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
             if (srcCurrItem.r) {
                 srcCurrItem.r.lcnt++;
                 if (isForwardDirection) {
-                    srcCurrItem.r.fsa++;
+                    if(ok){
+                        srcCurrItem.r.fsa++;
+                    }
                 } else {
-                    srcCurrItem.r.rsa++;
+                    if(ok){
+                        srcCurrItem.r.rsa++;
+                    }
                 }
             } else {
                 srcCurrItem.r = {
@@ -116,9 +121,13 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
                     rsa: 0
                 }
                 if (isForwardDirection) {
-                    srcCurrItem.r.fsa++;
+                    if(ok){
+                        srcCurrItem.r.fsa++;
+                    }
                 } else {
-                    srcCurrItem.r.rsa++;
+                    if(ok){
+                        srcCurrItem.r.rsa++;
+                    }
                 }
             }
         }
@@ -142,10 +151,10 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
             if (!itmB.r) {
                 return 1;
             }
-            let ar = itmA.r.fsa / itmA.r.lcnt + itmA.r.rsa / itmA.r.lcnt;
+            let ar = itmA.r.fsa / itmA.r.lcnt + itmA.r.rsa / itmA.r.lcnt; 
             let br = itmB.r.fsa / itmB.r.lcnt + itmB.r.rsa / itmB.r.lcnt;
-            if (ar === br) {
-                return 0;
+            if (ar === br) { 
+                return itmA.r.lcnt - itmB.r.lcnt;
             }
             let result = ar > br ? -1 : 1;
             return result;

@@ -89,7 +89,7 @@ class SRResultComparerClass{
         }
         results.forEach(r=>{
             r.forEach(rr=>{
-                console.log(rr.transcript);
+                //console.log(rr.transcript);
             })
         })                
         
