@@ -68,11 +68,11 @@ class SRResultComparerClass{
 
     invokeChangeResultHandler(){
         if(this.cmpStatus === "Success"){
-            console.log("*** Success ***")
+            //console.log("*** Success ***")
         }        
         if(this.handleChangeResult){
             if(this.iswrdResultsChanged() || this.cmpStatus != this.cmpPrevStatus){
-                console.log("invoke this.handleChangeResult",this.cmpStatus)
+                //console.log("invoke this.handleChangeResult",this.cmpStatus)
                 this.handleChangeResult();
                 this.cmpPrevStatus = this.cmpStatus;
             }
@@ -87,10 +87,17 @@ class SRResultComparerClass{
         if(this.cmpStatus === "Success" || this.cmpStatus === "TimeoutElapsed"){
             return;
         }
+        results.forEach(r=>{
+            r.forEach(rr=>{
+                console.log(rr.transcript);
+            })
+        })                
+        
         if(this.commandDetector){
             if(this.cmpStatus !== "CommandMode"){
                 if(this.commandDetector.hasCmdActivatorPhrase(results)){
                     this.setNewCmpStatus("CommandMode");
+                    SpeechRecognizer.start("en-US");
                 }        
             }
             if(this.cmpStatus === "CommandMode"){

@@ -4,22 +4,22 @@ import { ColorWords } from './ColorWords';
 import { SayText } from './SayText';
 import SRResultCmdDetector, { TVoiceCommand } from './SR/SRResultCmdDetector';
 import SRResultComparer from './SR/SRResultComparer';
-export interface IPhraseMemorizerState{
-    items:IItem[]; 
-    currentItem:IItem|undefined;
-    status:TPlayerStatus;
-    cmpWordsResult:boolean[]
+export interface IPhraseMemorizerState {
+    items: IItem[];
+    currentItem: IItem | undefined;
+    status: TPlayerStatus;
+    cmpWordsResult: boolean[]
 }
 
-export class PhraseMemorizer extends React.Component<any,IPhraseMemorizerState>{
-    ref:any;
-    constructor(props:any){
+export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>{
+    ref: any;
+    constructor(props: any) {
         super(props);
         this.state = {
-            items:[],
-            currentItem:undefined,
-            status:'Pause',
-            cmpWordsResult:[]
+            items: [],
+            currentItem: undefined,
+            status: 'Pause',
+            cmpWordsResult: []
         }
         this.handleComparisonProgress = this.handleComparisonProgress.bind(this);
         this.onVoiceCommandDetected = this.onVoiceCommandDetected.bind(this);
@@ -27,156 +27,157 @@ export class PhraseMemorizer extends React.Component<any,IPhraseMemorizerState>{
     }
 
     componentDidMount(): void {
-        let itemlist:IItem[] = [
-            {q:{lang:'en-US',text:'red roses too'},a:{lang:'ru-RU',text:'красные розы тоже'},r:undefined},
-            {q:{lang:'en-US',text:'apple'},a:{lang:'ru-RU',text:'яблоко'},r:undefined},
-            {q:{lang:'en-US',text:'cucumber'},a:{lang:'ru-RU',text:'кукумбер'},r:undefined}
+        let itemlist: IItem[] = [
+            { q: { lang: 'en-US', text: 'red roses too' }, a: { lang: 'ru-RU', text: 'красные розы тоже' }, r: undefined },
+            { q: { lang: 'en-US', text: 'apple' }, a: { lang: 'ru-RU', text: 'яблоко' }, r: undefined },
+            { q: { lang: 'en-US', text: 'cucumber' }, a: { lang: 'ru-RU', text: 'кукумбер' }, r: undefined }
         ];
-        this.setState({items:itemlist});
+        this.setState({ items: itemlist });
     }
 
-    onVoiceCommandDetected(cmd:TVoiceCommand){
-        if(cmd === 'GoNextItem'){
-            this.setState({status:'WaitNextItem'});
+    onVoiceCommandDetected(cmd: TVoiceCommand) {
+        if (cmd === 'GoNextItem') {
+            this.setState({ status: 'WaitNextItem' });
+            console.log("WaitNextItem");
         }
     }
 
     componentDidUpdate(prevProps: Readonly<any>, prevState: Readonly<IPhraseMemorizerState>, snapshot?: any): void {
-        if(prevState.status !== this.state.status){
-            console.log("*** Status: "+this.state.status);
-            if(this.state.status === 'SayQuestion'){
-                this.sayQuestion();                        
+        if (prevState.status !== this.state.status) {
+            //console.log("*** Status: " + this.state.status);
+            if (this.state.status === 'SayQuestion') {
+                this.sayQuestion();
             }
-            if(this.state.status === 'WaitAnswerToBeStarted'){
+            if (this.state.status === 'WaitAnswerToBeStarted') {
                 let itm = this.state.currentItem;
-                if(itm){
-                    SRResultComparer.startNewComparison(itm.a.text,itm.a.lang, 10000, this.handleComparisonProgress);
+                if (itm) {
+                    SRResultComparer.startNewComparison(itm.a.text, itm.a.lang, 10000, this.handleComparisonProgress);
                 }
-                this.setState({status:'WaitAnswerInProcess'});
+                this.setState({ status: 'WaitAnswerInProcess' });
                 return;
             }
-            if(this.state.status === 'WaitNextItem'){
+            if (this.state.status === 'WaitNextItem') {
                 console.log("go next item");
-                this.goNextItem();    
+                this.goNextItem();
                 return;
-            }    
+            }
         }
-        if(this.state.status === 'WaitAnswerInProcess'){
-            if(SRResultComparer.cmpStatus === 'Success'){
-                this.setState({status: 'AnswerIsCorrect'});
-                setTimeout(()=>{this.setState({status:"WaitNextItem"})},1000);
+        if (this.state.status === 'WaitAnswerInProcess') {
+            if (SRResultComparer.cmpStatus === 'Success') {
+                this.setState({ status: 'AnswerIsCorrect' });
+                setTimeout(() => { this.setState({ status: "WaitNextItem" }) }, 1000);
                 this.setItemResult(true);
-            }    
-            if(SRResultComparer.cmpStatus === 'TimeoutElapsed'){
-                this.setState({status: 'AnswerIsFailed'});
-                setTimeout(()=>{this.setState({status:"WaitNextItem"})},1000);
+            }
+            if (SRResultComparer.cmpStatus === 'TimeoutElapsed') {
+                this.setState({ status: 'AnswerIsFailed' });
+                setTimeout(() => { this.setState({ status: "WaitNextItem" }) }, 1000);
                 this.setItemResult(false);
             }
-            if(SRResultComparer.cmpStatus === 'CommandMode'){
+            if (SRResultComparer.cmpStatus === 'CommandMode') {
             }
         }
     }
 
-    setItemResult(ok:boolean):void{
-        if(!this.state.currentItem){
+    setItemResult(ok: boolean): void {
+        if (!this.state.currentItem) {
             return;
         }
         let currItem = this.state.currentItem;
         let srcCurrItem = undefined;
         let isForwardDirection = true;
-        for(let i=0;i<this.state.items.length;i++){
+        for (let i = 0; i < this.state.items.length; i++) {
             let itm = this.state.items[i];
-            isForwardDirection = (itm.q.lang ===currItem.q.lang);
-            if(isForwardDirection){
-                if(itm.q.text.toLocaleLowerCase() === currItem.q.text.toLocaleLowerCase()){
+            isForwardDirection = (itm.q.lang === currItem.q.lang);
+            if (isForwardDirection) {
+                if (itm.q.text.toLocaleLowerCase() === currItem.q.text.toLocaleLowerCase()) {
                     srcCurrItem = itm;
                     break;
                 }
-            } else{
-                if(itm.q.text.toLocaleLowerCase() === currItem.a.text.toLocaleLowerCase()){
+            } else {
+                if (itm.q.text.toLocaleLowerCase() === currItem.a.text.toLocaleLowerCase()) {
                     srcCurrItem = itm;
                     isForwardDirection = false;
                     break;
                 }
             }
         }
-        if(srcCurrItem){
-            if(srcCurrItem.r){
+        if (srcCurrItem) {
+            if (srcCurrItem.r) {
                 srcCurrItem.r.lcnt++;
-                if(isForwardDirection){
+                if (isForwardDirection) {
                     srcCurrItem.r.fsa++;
                 } else {
                     srcCurrItem.r.rsa++;
                 }
-            } else{
+            } else {
                 srcCurrItem.r = {
-                    lcnt:1,
-                    fsa:0,
-                    rsa:0
+                    lcnt: 1,
+                    fsa: 0,
+                    rsa: 0
                 }
-                if(isForwardDirection){
+                if (isForwardDirection) {
                     srcCurrItem.r.fsa++;
                 } else {
                     srcCurrItem.r.rsa++;
                 }
             }
-        }     
+        }
     }
 
-    handleComparisonProgress(){
+    handleComparisonProgress() {
         let s = SRResultComparer.getWrdCmpResult();
-        console.log(JSON.stringify(s), SRResultComparer.cmpStatus);
-        this.setState({cmpWordsResult:s});
+        //console.log(JSON.stringify(s), SRResultComparer.cmpStatus);
+        this.setState({ cmpWordsResult: s });
     }
 
 
-    goNextItem(){
-        let comparePredicate = (itmA:IItem,itmB:IItem)=>{
-            if(!itmA.r && !itmB.r){
+    goNextItem() {
+        let comparePredicate = (itmA: IItem, itmB: IItem) => {
+            if (!itmA.r && !itmB.r) {
                 return 0;
             }
-            if(!itmA.r){
+            if (!itmA.r) {
                 return -1;
             }
-            if(!itmB.r){
+            if (!itmB.r) {
                 return 1;
             }
-            let ar = itmA.r.fsa/itmA.r.lcnt + itmA.r.rsa/itmA.r.lcnt;
-            let br = itmB.r.fsa/itmB.r.lcnt + itmB.r.rsa/itmB.r.lcnt; 
-            if(ar === br){
+            let ar = itmA.r.fsa / itmA.r.lcnt + itmA.r.rsa / itmA.r.lcnt;
+            let br = itmB.r.fsa / itmB.r.lcnt + itmB.r.rsa / itmB.r.lcnt;
+            if (ar === br) {
                 return 0;
             }
-            let result =  ar>br?-1:1;
+            let result = ar > br ? -1 : 1;
             return result;
         };
         let sortedItems = this.state.items.sort(comparePredicate);
-        let forwardNextItem = {...sortedItems[0]};
-        if(!forwardNextItem.r){
-            this.setState({currentItem:forwardNextItem,status:"SayQuestion"});
+        let forwardNextItem = { ...sortedItems[0] };
+        if (!forwardNextItem.r) {
+            this.setState({ currentItem: forwardNextItem, status: "SayQuestion" });
             return;
         }
-        if(forwardNextItem.r.fsa<forwardNextItem.r.rsa){
-            this.setState({currentItem:forwardNextItem,status:"SayQuestion"});
+        if (forwardNextItem.r.fsa < forwardNextItem.r.rsa) {
+            this.setState({ currentItem: forwardNextItem, status: "SayQuestion" });
             return;
         }
-        let reverseNextItem:IItem = {
-            q:forwardNextItem.a,
-            a:forwardNextItem.q,
-            r:forwardNextItem.r
-        } 
-        this.setState({currentItem:reverseNextItem,status:"SayQuestion"});
+        let reverseNextItem: IItem = {
+            q: forwardNextItem.a,
+            a: forwardNextItem.q,
+            r: forwardNextItem.r
+        }
+        this.setState({ currentItem: reverseNextItem, status: "SayQuestion" });
     }
 
-    sayQuestion(){
+    sayQuestion() {
         let itm = this.state.currentItem;
-        if(itm){
-            SayText.addMessage(itm.q,()=>{
-                this.setState({status:'WaitAnswerToBeStarted'});
-            });            
+        if (itm) {
+            SayText.addMessage(itm.q, () => {
+                this.setState({ status: 'WaitAnswerToBeStarted' });
+            });
         }
     }
 
-    handleClick(){
+    handleClick() {
         this.goNextItem();
     }
 
@@ -184,63 +185,32 @@ export class PhraseMemorizer extends React.Component<any,IPhraseMemorizerState>{
         let qtext = "";
         let atext = "";
         let selItm = this.state.currentItem;
-        if(selItm){
+        if (selItm) {
             qtext = selItm.q.text;
-            atext = selItm.a.text;  
+            atext = selItm.a.text;
         }
-        return(
+        return (
             <div className='ph-mem'>
-            <div className='ph-mem__toolbar' >
-                <button onClick={()=>this.handleClick()}>Start</button>
+                <div className='ph-mem__toolbar' >
+                    <button onClick={() => this.handleClick()}>Start</button>
+                </div>
+                <div className='ph-mem__question'>
+                    <div className='ph-mem__header'>
+                        Q
+                    </div>
+                    <div className='ph-mem__body'>
+                        {qtext}
+                    </div>
+                </div>
+                <div className='ph-mem__answer'>
+                    <div className='ph-mem__header'>
+                        A
+                    </div>
+                    <div className='ph-mem__body'>
+                        <ColorWords text={atext} wordStatuses={this.state.cmpWordsResult} />
+                    </div>
+                </div>
             </div>
-            <div className='ph-mem__question'>
-                <div className='ph-mem__header'>
-                    Q
-                </div>
-                <div className='ph-mem__body'>
-                    {qtext}
-                </div>
-            </div>
-            <div className='ph-mem__answer'>
-            <div className='ph-mem__header'>
-                    A
-                </div>
-                <div className='ph-mem__body'>
-                    <ColorWords text={atext} wordStatuses={this.state.cmpWordsResult}/>
-                </div>
-            </div>
-        </div>
         );
     }
 }
-
-// export function PhraseMemorizerr({getNextItem}:{getNextItem:()=>IItem}){
-//     const [status,setStatus] = useState<TPlayerStatus>('WaitNextItem');
-//     const [qaItem,setqaItem] = useState(getNextItem());
-//     if(status === 'WaitNextItem'){
-//         setqaItem(getNextItem());
-//         setStatus('SayQuestion');
-//     }    
-//     return(
-//         <div className='ph-mem'>
-//             <div className='ph-mem__toolbar'>
-//             </div>
-//             <div className='ph-mem__question'>
-//                 <div className='ph-mem__header'>
-//                     Q
-//                 </div>
-//                 <div className='ph-mem__body'>
-//                     {qaItem.q.text}
-//                 </div>
-//             </div>
-//             <div className='ph-mem__answer'>
-//             <div className='ph-mem__header'>
-//                     A
-//                 </div>
-//                 <div className='ph-mem__body'>
-//                     <ColorWords text={qaItem.a.text} wordStatuses={this.getWordStatuses}/>
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// }

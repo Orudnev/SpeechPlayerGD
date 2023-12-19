@@ -38,15 +38,15 @@ class SpeechRecognizerClass {
     }
     
     handleStart(){
-        console.log('Speech recognition started')
+        //console.log('Speech recognition started')
         this.Status = "Started";
     }
 
     handleEnd(){
-        console.log('handleEnd');
+        //console.log('handleEnd');
         if(this.Status === "Stopping"){
             this.Status = "Stopped";
-            console.log('Speech recognition stopped')
+            //console.log('Speech recognition stopped')
             return;
         }
         this.recEngineInstance.start();
@@ -81,7 +81,7 @@ class SpeechRecognizerClass {
     }
 
     handleError(e:any){
-        console.log(e);
+        //console.log(e);
     }
 
     start(lang:TLanguage){

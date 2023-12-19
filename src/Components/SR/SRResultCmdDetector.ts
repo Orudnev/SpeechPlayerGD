@@ -51,6 +51,7 @@ class SRResultCmdDetectorClass implements ICommandDetector{
                 let rr = r[j];
                 let recognizedText:string = rr.transcript;
                 if(this.hasVoiceCommand(recognizedText,"CmdModeActivation")){
+                    console.log("Start command phrase detected");
                     return true;
                 }
             }
@@ -91,6 +92,7 @@ class SRResultCmdDetectorClass implements ICommandDetector{
             SRResultComparer.stopComparison();
             if(this.commandExecutionHandler){
                 this.commandExecutionHandler(cmd);
+                console.log(`command ${cmd} has been detected`);
             }
         }
     }
