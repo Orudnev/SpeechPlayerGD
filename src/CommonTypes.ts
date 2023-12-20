@@ -8,7 +8,8 @@ export interface ISubItem {
 export interface IResult{
     lcnt:number;  //whole listening counter
     fsa:number;   //forward (question->answer) succeded answers
-    rsa:number;   //reverse (answer->question) succeded answers    
+    rsa:number;   //reverse (answer->question) succeded answers 
+    ts:number;      //last access timestamp     
 }
 
 export interface IItem {

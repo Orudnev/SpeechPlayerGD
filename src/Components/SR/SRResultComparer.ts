@@ -67,9 +67,6 @@ class SRResultComparerClass{
     }
 
     invokeChangeResultHandler(){
-        if(this.cmpStatus === "Success"){
-            //console.log("*** Success ***")
-        }        
         if(this.handleChangeResult){
             if(this.iswrdResultsChanged() || this.cmpStatus != this.cmpPrevStatus){
                 //console.log("invoke this.handleChangeResult",this.cmpStatus)
@@ -79,6 +76,9 @@ class SRResultComparerClass{
             this.wordCmpPrevResult = [...this.wordCmpResult];
         }
         if(this.cmpStatus === "Success"){
+            if(this.handleChangeResult){
+                this.handleChangeResult();
+            }
             this.stopComparison();
         }
     }
@@ -89,7 +89,7 @@ class SRResultComparerClass{
         }
         results.forEach(r=>{
             r.forEach(rr=>{
-                //console.log(rr.transcript);
+                console.log(rr.transcript);
             })
         })                
         
@@ -144,6 +144,7 @@ class SRResultComparerClass{
             }
             if(matchedPercent>=this.pcLimit){
                 this.setNewCmpStatus("Success");
+                clearTimeout(this.timer);
                 return
             }
         }

@@ -8,6 +8,7 @@ import {
   Link
 } from "react-router-dom";
 import './App.css';
+import './Images.css';
 import { AppSessionData, TAppSettigs } from './Components/AppData';
 import { store, TAllActions, IAppState } from './Reducers/index';
 import { SpeechRecognizer, SRResultAlternative, TResultHandler } from './Components/SR/SpeechRecognizer';

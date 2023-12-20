@@ -62,20 +62,117 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
                 this.goNextItem();
                 return;
             }
+            if(this.state.status === 'Pause'){
+                SRResultComparer.stopComparison();
+                this.setState({currentItem:undefined});
+            }
         }
-        if (this.state.status === 'WaitAnswerInProcess') {
-            if (SRResultComparer.cmpStatus === 'Success') {
-                this.setState({ status: 'AnswerIsCorrect' });
-                setTimeout(() => { this.setState({ status: "WaitNextItem" }) }, 1000);
-                this.setItemResult(true);
+        if (this.state.status === 'AnswerIsCorrect' || this.state.status === 'AnswerIsFailed') {
+                setTimeout(()=>{
+                    this.setState({ status: "WaitNextItem" });
+                 }, 1000);
+        }
+    }
+
+
+    handleComparisonProgress() {
+        let s = SRResultComparer.getWrdCmpResult();
+        if(SRResultComparer.cmpStatus === "Success"){
+            this.setItemResult(true);
+            this.setState({ status:"AnswerIsCorrect", cmpWordsResult: s });
+            return;
+        } 
+        if (SRResultComparer.cmpStatus === "TimeoutElapsed"){
+            this.setItemResult(false);
+            this.setState({ status:"AnswerIsFailed", cmpWordsResult: s });
+            return;
+        }
+        this.setState({ cmpWordsResult: s });        
+    }
+
+    handleBtnStartStopClick() {
+        if(this.state.status === 'Pause'){
+            SRResultComparer.stopComparison();
+            this.goNextItem();
+        } else {
+            
+            this.setState({status:'Pause'});
+        }
+    }
+
+    handleBtnNextClick(){
+        this.setItemResult(false)
+        this.setState({status:"WaitNextItem"});
+    }
+
+    handleBtnSettingsClick(){
+
+    }
+
+    goNextItem() {
+        let comparePredicate = (itmA: IItem, itmB: IItem) => {
+            if (!itmA.r && !itmB.r) {
+                return 0;
             }
-            if (SRResultComparer.cmpStatus === 'TimeoutElapsed') {
-                this.setState({ status: 'AnswerIsFailed' });
-                setTimeout(() => { this.setState({ status: "WaitNextItem" }) }, 1000);
-                this.setItemResult(false);
+            if (!itmA.r) {
+                return -1;
             }
-            if (SRResultComparer.cmpStatus === 'CommandMode') {
+            if (!itmB.r) {
+                return 1;
             }
+            let ar = itmA.r.fsa / itmA.r.lcnt + itmA.r.rsa / itmA.r.lcnt; 
+            let br = itmB.r.fsa / itmB.r.lcnt + itmB.r.rsa / itmB.r.lcnt;
+            if (ar === br) {
+                if(itmA.r.lcnt === itmB.r.lcnt){
+                    return itmA.r.ts - itmB.r.ts;
+                } 
+                return itmA.r.lcnt - itmB.r.lcnt;
+            }
+            let result = ar > br ? 1 : -1;
+            return result;
+        };
+        let sortedItems = this.state.items.sort(comparePredicate);        
+        let forwardNextItem = sortedItems.find((itm)=>{
+            if(this.state.currentItem){
+                return this.state.currentItem.q.text !== itm.q.text && this.state.currentItem.a.text !== itm.q.text;
+            } else {
+                return false;
+            }   
+        });
+        if(!this.state.currentItem && !forwardNextItem){
+            forwardNextItem = sortedItems[0];
+        }
+        if(!forwardNextItem){
+            throw new Error("to be handled");
+        }
+        if (!forwardNextItem.r) {
+            this.setState({ currentItem: forwardNextItem,cmpWordsResult:[], status: "SayQuestion" });
+            //console.log(forwardNextItem.q.text);
+            return;
+        }
+        if (forwardNextItem.r.fsa < forwardNextItem.r.rsa) {
+            this.setState({ currentItem: forwardNextItem,cmpWordsResult:[], status: "SayQuestion" });
+            //console.log(forwardNextItem.q.text);
+            return;
+        }
+        let reverseNextItem: IItem = {
+            q: forwardNextItem.a,
+            a: forwardNextItem.q,
+            r: forwardNextItem.r
+        }
+        this.setState({ currentItem: reverseNextItem,cmpWordsResult:[], status: "SayQuestion" });
+        //console.log(reverseNextItem.q.text);
+    }
+
+    sayQuestion() {
+        let itm = this.state.currentItem;
+        if (itm) {
+            SayText.addMessage(itm.q, () => {
+                this.setState({ status: 'WaitAnswerToBeStarted' });
+                if(itm && itm.r){
+                    itm.r.ts = Date.now();
+                }
+            });
         }
     }
 
@@ -105,6 +202,7 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
         if (srcCurrItem) {
             if (srcCurrItem.r) {
                 srcCurrItem.r.lcnt++;
+                srcCurrItem.r.ts = Date.now();
                 if (isForwardDirection) {
                     if(ok){
                         srcCurrItem.r.fsa++;
@@ -118,7 +216,8 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
                 srcCurrItem.r = {
                     lcnt: 1,
                     fsa: 0,
-                    rsa: 0
+                    rsa: 0,
+                    ts:Date.now()
                 }
                 if (isForwardDirection) {
                     if(ok){
@@ -133,62 +232,6 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
         }
     }
 
-    handleComparisonProgress() {
-        let s = SRResultComparer.getWrdCmpResult();
-        //console.log(JSON.stringify(s), SRResultComparer.cmpStatus);
-        this.setState({ cmpWordsResult: s });
-    }
-
-
-    goNextItem() {
-        let comparePredicate = (itmA: IItem, itmB: IItem) => {
-            if (!itmA.r && !itmB.r) {
-                return 0;
-            }
-            if (!itmA.r) {
-                return -1;
-            }
-            if (!itmB.r) {
-                return 1;
-            }
-            let ar = itmA.r.fsa / itmA.r.lcnt + itmA.r.rsa / itmA.r.lcnt; 
-            let br = itmB.r.fsa / itmB.r.lcnt + itmB.r.rsa / itmB.r.lcnt;
-            if (ar === br) { 
-                return itmA.r.lcnt - itmB.r.lcnt;
-            }
-            let result = ar > br ? -1 : 1;
-            return result;
-        };
-        let sortedItems = this.state.items.sort(comparePredicate);
-        let forwardNextItem = { ...sortedItems[0] };
-        if (!forwardNextItem.r) {
-            this.setState({ currentItem: forwardNextItem, status: "SayQuestion" });
-            return;
-        }
-        if (forwardNextItem.r.fsa < forwardNextItem.r.rsa) {
-            this.setState({ currentItem: forwardNextItem, status: "SayQuestion" });
-            return;
-        }
-        let reverseNextItem: IItem = {
-            q: forwardNextItem.a,
-            a: forwardNextItem.q,
-            r: forwardNextItem.r
-        }
-        this.setState({ currentItem: reverseNextItem, status: "SayQuestion" });
-    }
-
-    sayQuestion() {
-        let itm = this.state.currentItem;
-        if (itm) {
-            SayText.addMessage(itm.q, () => {
-                this.setState({ status: 'WaitAnswerToBeStarted' });
-            });
-        }
-    }
-
-    handleClick() {
-        this.goNextItem();
-    }
 
     render(): React.ReactNode {
         let qtext = "";
@@ -198,10 +241,19 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
             qtext = selItm.q.text;
             atext = selItm.a.text;
         }
+        let classBtnStartStop = this.state.status === 'Pause'?'img-btn img-power-off':'img-btn img-power-on'; 
         return (
             <div className='ph-mem'>
                 <div className='ph-mem__toolbar' >
-                    <button onClick={() => this.handleClick()}>Start</button>
+                    <button className="toolbar-button" onClick={() => this.handleBtnStartStopClick()}>
+                        <div className={classBtnStartStop} />
+                    </button>
+                    <button className="toolbar-button" onClick={() => this.handleBtnNextClick()}>
+                        <div className="img-btn img-right" />
+                    </button>
+                    <button className="toolbar-button" onClick={() => this.handleBtnSettingsClick()}>
+                        <div className="img-btn img-config" />
+                    </button>
                 </div>
                 <div className='ph-mem__question'>
                     <div className='ph-mem__header'>
