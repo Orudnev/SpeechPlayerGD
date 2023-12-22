@@ -2,8 +2,7 @@ import axios from "axios";
 import { IItem } from "./CommonTypes";
 
 
-const webApiBaseUrl = 'https://script.google.com/macros/s/AKfycbya84a1BymQdEcjI9JYiFEAjfco574jxfXfd4f-r-E1iCJaGLW6BQ-exRlvXRPft7xlng/exec';
-
+const webApiBaseUrl = 'https://script.google.com/macros/s/AKfycbytBZypIhkxekiEn52B_GgKhhJBHBauCIhi0pD38zLiXlxFgx0G8vR-9Bt3_5hjtKb4zw/exec';
 export interface IApiResponse{
     isOk:boolean;
     result:IItem[];
@@ -44,4 +43,21 @@ export function GetAllRows(handler:(response:IApiResponse)=>void){
         }
     }
     );
+}
+
+export function storeResult(resultItems:IItem[]){
+    let dataObj = {method:'storeResult',items:resultItems};
+    let dataObjJson = JSON.stringify(dataObj);
+    axios({
+        url:webApiBaseUrl,
+        method:'POST',
+        data:dataObjJson
+    })
+    .then(resp=>{
+        let s=1;
+    })
+    .catch(err=>{
+        let s=1;
+    });
+    
 }

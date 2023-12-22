@@ -15,6 +15,7 @@ export interface IPhraseMemorizerState {
 
 export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>{
     ref: any;
+    maxStoredTs:number = 0;
     constructor(props: any) {
         super(props);
         this.state = {
@@ -36,6 +37,13 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
         // ]; 
         waw.GetAllRows((resp)=>{
             if(resp.isOk){
+                this.maxStoredTs = resp.result.filter(itm=>itm.r && itm.r.ts)
+                    .reduce(function(acc,itm){
+                        if(itm.r && itm.r.ts && itm.r.ts > acc){
+                            acc = itm.r.ts;
+                        }
+                        return acc;
+                    },0)
                 this.setState({status:'Pause', items: resp.result });                
             } else {
                 console.log(resp.error);
@@ -103,8 +111,8 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
             SRResultComparer.stopComparison();
             this.goNextItem();
         } else {
-            
             this.setState({status:'Pause'});
+            this.storeResultToCloud();
         }
     }
 
@@ -124,7 +132,6 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
     hadnleAClick(){
         this.sayAnswer();
     }
-
 
     goNextItem() {
         let comparePredicate = (itmA: IItem, itmB: IItem) => {
@@ -262,6 +269,13 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
         }
     }
 
+    storeResultToCloud(){
+        let accessedItems = this.state.items.filter(itm=>itm.r && itm.r.ts>this.maxStoredTs);
+        if(accessedItems.length == 0){
+            return;
+        }
+        waw.storeResult(accessedItems);
+    }
 
     render(): React.ReactNode {
         if(this.state.status === 'Loading'){
