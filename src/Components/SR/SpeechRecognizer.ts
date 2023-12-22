@@ -31,6 +31,8 @@ class SpeechRecognizerClass {
         this.recEngineInstance.onend = this.handleEnd;
         this.recEngineInstance.onresult = this.handleResult;
         this.recEngineInstance.onerror = this.handleError;
+        this.start = this.start.bind(this);
+        this.stop = this.stop.bind(this);
     }
 
     subscribeOnResult(newHandler:TResultHandler){
@@ -91,14 +93,16 @@ class SpeechRecognizerClass {
             this.recEngineInstance.start();    
         } else {
             setTimeout(() => {
-                //this.start(lang);
+                this.start(lang);
             }, 1000);
         }
     }
 
     stop(){
-        this.Status = "Stopping";
-        this.recEngineInstance.stop();
+        if(this.Status !='Stopped'){
+            this.Status = "Stopping";
+            this.recEngineInstance.stop();    
+        }
     }
 }
 

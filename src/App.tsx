@@ -103,7 +103,7 @@ function App() {
     <div>
       <Routes>
         <Route path={"/"} element={<PhraseMemorizer />} />
-        <Route path={"/SpeechPlayerGD"} element={<Root />} />
+        <Route path={"/SpeechPlayerGD"} element={<PhraseMemorizer />} />
         <Route path={"/SpeechPlayerGD/Lesson1"} element={<Lesson1 />} />
       </Routes>
     </div>
