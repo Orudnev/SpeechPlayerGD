@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/SpeechPlayerGD/static/css/main.fd4c706e.css",
-    "main.js": "/SpeechPlayerGD/static/js/main.b5efb9d3.js",
+    "main.js": "/SpeechPlayerGD/static/js/main.5cc72bc5.js",
     "index.html": "/SpeechPlayerGD/index.html",
     "main.fd4c706e.css.map": "/SpeechPlayerGD/static/css/main.fd4c706e.css.map",
-    "main.b5efb9d3.js.map": "/SpeechPlayerGD/static/js/main.b5efb9d3.js.map"
+    "main.5cc72bc5.js.map": "/SpeechPlayerGD/static/js/main.5cc72bc5.js.map"
   },
   "entrypoints": [
     "static/css/main.fd4c706e.css",
-    "static/js/main.b5efb9d3.js"
+    "static/js/main.5cc72bc5.js"
   ]
 }
