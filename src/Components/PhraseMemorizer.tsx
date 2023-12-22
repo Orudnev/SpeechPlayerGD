@@ -4,12 +4,14 @@ import { ColorWords } from './ColorWords';
 import { SayText } from './SayText';
 import SRResultCmdDetector, { TVoiceCommand } from './SR/SRResultCmdDetector';
 import SRResultComparer from './SR/SRResultComparer';
+import * as waw from '../WebApiWrapper';
 export interface IPhraseMemorizerState {
     items: IItem[];
     currentItem: IItem | undefined;
     status: TPlayerStatus;
     cmpWordsResult: boolean[]
 }
+
 
 export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>{
     ref: any;
@@ -18,7 +20,7 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
         this.state = {
             items: [],
             currentItem: undefined,
-            status: 'Pause',
+            status: 'Loading',
             cmpWordsResult: []
         }
         this.handleComparisonProgress = this.handleComparisonProgress.bind(this);
@@ -27,12 +29,18 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
     }
 
     componentDidMount(): void {
-        let itemlist: IItem[] = [
-            { q: { lang: 'en-US', text: 'red roses too' }, a: { lang: 'ru-RU', text: 'красные розы тоже' }, r: undefined },
-            { q: { lang: 'en-US', text: 'apple' }, a: { lang: 'ru-RU', text: 'яблоко' }, r: undefined },
-            { q: { lang: 'en-US', text: 'cucumber' }, a: { lang: 'ru-RU', text: 'кукумбер' }, r: undefined }
-        ];
-        this.setState({ items: itemlist });
+        // let itemlist: IItem[] = [
+        //     { q: { lang: 'en-US', text: 'red roses too' }, a: { lang: 'ru-RU', text: 'красные розы тоже' }, r: undefined },
+        //     { q: { lang: 'en-US', text: 'apple' }, a: { lang: 'ru-RU', text: 'яблоко' }, r: undefined },
+        //     { q: { lang: 'en-US', text: 'cucumber' }, a: { lang: 'ru-RU', text: 'кукумбер' }, r: undefined }
+        // ]; 
+        waw.GetAllRows((resp)=>{
+            if(resp.isOk){
+                this.setState({status:'Pause', items: resp.result });                
+            } else {
+                console.log(resp.error);
+            }
+        });
     }
 
     onVoiceCommandDetected(cmd: TVoiceCommand) {
@@ -109,6 +117,15 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
 
     }
 
+    hadnleQClick(){
+        this.sayQuestion();
+    }
+
+    hadnleAClick(){
+        this.sayAnswer();
+    }
+
+
     goNextItem() {
         let comparePredicate = (itmA: IItem, itmB: IItem) => {
             if (!itmA.r && !itmB.r) {
@@ -120,8 +137,8 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
             if (!itmB.r) {
                 return 1;
             }
-            let ar = itmA.r.fsa / itmA.r.lcnt + itmA.r.rsa / itmA.r.lcnt; 
-            let br = itmB.r.fsa / itmB.r.lcnt + itmB.r.rsa / itmB.r.lcnt;
+            let ar = itmA.r.lcnt?itmA.r.fsa / itmA.r.lcnt + itmA.r.rsa / itmA.r.lcnt:0; 
+            let br = itmB.r.lcnt?itmB.r.fsa / itmB.r.lcnt + itmB.r.rsa / itmB.r.lcnt:0;
             if (ar === br) {
                 if(itmA.r.lcnt === itmB.r.lcnt){
                     return itmA.r.ts - itmB.r.ts;
@@ -145,7 +162,7 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
         if(!forwardNextItem){
             throw new Error("to be handled");
         }
-        if (!forwardNextItem.r) {
+        if (!forwardNextItem.r || forwardNextItem.r.lcnt === 0) {
             this.setState({ currentItem: forwardNextItem,cmpWordsResult:[], status: "SayQuestion" });
             //console.log(forwardNextItem.q.text);
             return;
@@ -175,6 +192,19 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
             });
         }
     }
+
+    sayAnswer() {
+        let itm = this.state.currentItem;
+        if (itm) {
+            SayText.addMessage(itm.a, () => {
+                this.setState({ status: 'WaitAnswerToBeStarted' });
+                if(itm && itm.r){
+                    itm.r.ts = Date.now();
+                }
+            });
+        }
+    }
+
 
     setItemResult(ok: boolean): void {
         if (!this.state.currentItem) {
@@ -234,6 +264,9 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
 
 
     render(): React.ReactNode {
+        if(this.state.status === 'Loading'){
+            return (<div>loading...</div>)
+        }
         let qtext = "";
         let atext = "";
         let selItm = this.state.currentItem;
@@ -256,7 +289,7 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
                     </button>
                 </div>
                 <div className='ph-mem__question'>
-                    <div className='ph-mem__header'>
+                    <div className='ph-mem__header' onClick = {()=> this.hadnleQClick()}>
                         Q
                     </div>
                     <div className='ph-mem__body'>
@@ -264,7 +297,7 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
                     </div>
                 </div>
                 <div className='ph-mem__answer'>
-                    <div className='ph-mem__header'>
+                    <div className='ph-mem__header' onClick = {()=> this.hadnleAClick()}>
                         A
                     </div>
                     <div className='ph-mem__body'>

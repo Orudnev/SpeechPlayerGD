@@ -19,5 +19,5 @@ export interface IItem {
 }
 
 
-export type TPlayerStatus = 'Pause'|'SayQuestion'|'WaitAnswerToBeStarted'|'WaitAnswerInProcess'|'AnswerIsCorrect'|'AnswerIsFailed'|'WaitNextItem';
+export type TPlayerStatus = 'Loading'|'Pause'|'SayQuestion'|'WaitAnswerToBeStarted'|'WaitAnswerInProcess'|'AnswerIsCorrect'|'AnswerIsFailed'|'WaitNextItem';
 

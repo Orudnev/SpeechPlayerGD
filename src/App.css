@@ -40,5 +40,8 @@
     font-size: 40px;
     font-weight: 700;
     color: darkcyan;
+    border-bottom: solid 3px;
+    padding-left: 10px;
 }
+
 
