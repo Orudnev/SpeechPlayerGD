@@ -19,8 +19,6 @@ import { PhraseMemorizer } from './Components/PhraseMemorizer';
 import { SayText } from './Components/SayText';
 import { ISubItem } from './CommonTypes';
 
-
-
 class AppGlobalClass {
   private navfunc: NavigateFunction | undefined = undefined;
   signalR: any;
@@ -41,7 +39,7 @@ class AppGlobalClass {
     store.dispatch(action);
   }
 
-  navigate(url: string) {
+  navigate(url: any) {
     if (this.navfunc) {
       this.navfunc(url);
     }
@@ -105,7 +103,7 @@ function App() {
         <Route path={"/"} element={<PhraseMemorizer />} />
         <Route path={"/SpeechPlayerGD"} element={<PhraseMemorizer />} />
         <Route path={"/SpeechPlayerGD/Lesson1"} element={<Lesson1 />} />
-      </Routes>
+      </Routes> 
     </div>
   );
 }
