@@ -95,8 +95,8 @@ function App() {
   useEffect(() => {
     //AppGlobal.navigate("/SpeechPlayerGD/Lesson1");
   }, []);
-  let as = AppSessionData.prop('LastRowSetGettingMethod');
-  AppSessionData.prop('LastRowSetGettingMethod', "byrbyrbyr1");
+  //let as = AppSessionData.prop('LastRowSetGettingMethod');
+  //AppSessionData.prop('LastRowSetGettingMethod', "byrbyrbyr1");
   return (
     <div>
       <Routes>

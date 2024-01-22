@@ -7,6 +7,7 @@ import SRResultComparer from './SR/SRResultComparer';
 import * as waw from '../WebApiWrapper';
 import { AppGlobal } from '../App';
 import { Settings } from './Settings';
+import { AppSessionData } from './AppData';
 export interface IPhraseMemorizerState {
     items: IItem[];
     currentItem: IItem | undefined;
@@ -126,7 +127,7 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
     }
 
     handleBtnSettingsClick() {
-        this.setState({isSettingsMode:true});
+        this.setState({ isSettingsMode: true });
     }
 
     hadnleQClick() {
@@ -194,11 +195,37 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
 
     sayQuestion() {
         let itm = this.state.currentItem;
+        let needToSayAnswer = AppSessionData.prop('PlCfg_SayAnswer');
+        let needToListenAnswer = AppSessionData.prop('PlCfg_ListenAnswer');
+        let switchToListenAnswer = ()=>{
+            this.setState({ status: 'WaitAnswerToBeStarted' });
+            if (itm && itm.r) {
+                itm.r.ts = Date.now();
+            }
+        }
         if (itm) {
             SayText.addMessage(itm.q, () => {
-                this.setState({ status: 'WaitAnswerToBeStarted' });
-                if (itm && itm.r) {
-                    itm.r.ts = Date.now();
+                if (needToSayAnswer){
+                    if (itm) {
+                        if(needToListenAnswer){
+                            SayText.addMessage(itm.a, () => {
+                                switchToListenAnswer();
+                            });    
+                        } else {
+                            SayText.addMessage(itm.a,()=>{
+                                if(itm && itm.r) itm.r.ts = Date.now();
+                                this.setState({ status: 'WaitNextItem' });
+                            });                            
+                        }
+                    }
+                } else {
+                    if (itm) {
+                        if(needToListenAnswer){
+                            switchToListenAnswer();
+                        } else {
+                            this.setState({ status: 'WaitNextItem' });
+                        }
+                    }
                 }
             });
         }
@@ -285,8 +312,8 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
         if (this.state.status === 'Loading') {
             return (<div>loading...</div>)
         }
-        if(this.state.isSettingsMode){
-            return (<Settings onExit={()=>this.setState({isSettingsMode:false})} />);
+        if (this.state.isSettingsMode) {
+            return (<Settings onExit={() => this.setState({ isSettingsMode: false })} />);
         }
         let qtext = "";
         let atext = "";

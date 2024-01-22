@@ -44,10 +44,14 @@ abstract class AppSettingsBase {
     }
 }
 
+export interface IAppSession{
+    PlCfg_SayAnswer:boolean;
+    PlCfg_ListenAnswer:boolean;
+}
 
-const AppSessionDataDefaultValues = {
-    LastDocumentId:"",
-    LastRowSetGettingMethod:"getAllRows"
+const AppSessionDataDefaultValues:IAppSession = {
+    PlCfg_SayAnswer:false,
+    PlCfg_ListenAnswer:true
 }
 
 export type TAppSesstionDataProps = keyof typeof AppSessionDataDefaultValues;
