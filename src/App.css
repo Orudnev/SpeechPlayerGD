@@ -54,4 +54,9 @@
     max-width: 600px;
 }
 
+.settings_ddown{
+    position: relative;
+    top: 3px
+}
+
 

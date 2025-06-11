@@ -9,7 +9,7 @@ import {
 } from "react-router-dom";
 import './App.css';
 import './Images.css';
-import { AppSessionData, TAppSettigs } from './Components/AppData';
+import { AppSessionData  } from './Components/AppData';
 import { store, TAllActions, IAppState } from './Reducers/index';
 import { SpeechRecognizer, SRResultAlternative, TResultHandler } from './Components/SR/SpeechRecognizer';
 import SRResultComparer from './Components/SR/SRResultComparer';
@@ -17,7 +17,7 @@ import SRResultCmdDetector from './Components/SR/SRResultCmdDetector';
 import { ColorWords } from './Components/ColorWords';
 import { PhraseMemorizer } from './Components/PhraseMemorizer';
 import { SayText } from './Components/SayText';
-import { ISubItem } from './CommonTypes';
+import { AppPages, ISubItem } from './CommonTypes';
 
 class AppGlobalClass {
   private navfunc: NavigateFunction | undefined = undefined;
@@ -61,7 +61,7 @@ const Root = () => {
 }
 
 
-const Lesson1 = () => {
+export const Lesson1 = () => {
   let phrase = "Nothing you can do that can't be done";
   //let hl = [false,true,false,true,false,true,false,true];
   const [wrdStatuses,setWrdStatuses] = useState([false]);
@@ -82,9 +82,14 @@ const Lesson1 = () => {
       <PhraseMemorizer getNextItem={()=>{
         return {a:{lang:'en-US',text:'Waterfall'},q:{lang:'ru-RU',text:'водопад'}};
       }} />
+      бырбырбыр
     </div>
   );
 }
+
+
+
+
 
 function App() {
   AppGlobal.init(useNavigate());
@@ -100,12 +105,15 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route path={"/"} element={<PhraseMemorizer />} />
-        <Route path={"/SpeechPlayerGD"} element={<PhraseMemorizer />} />
-        <Route path={"/SpeechPlayerGD/Lesson1"} element={<Lesson1 />} />
+        {AppPages.map((p,i)=><Route key={i} path={p.path} element={p.getElement()} />)}
       </Routes> 
     </div>
   );
 }
 
 export default App;
+
+{/* <Route path={"/"} element={<PhraseMemorizer />} />
+<Route path={"/SpeechPlayerGD"} element={<PhraseMemorizer />} />
+<Route path={"/SpeechPlayerGD/Lesson1"} element={<Lesson1 />} /> */}
+

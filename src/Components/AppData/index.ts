@@ -1,5 +1,5 @@
-export type TRowSetGettingMethod = "getAllRows";
-export type TAppSettigs = "AppSessionData"|"AppConfigData";
+//export type TRowSetGettingMethod = "getAllRows";
+//export type TAppSettigs = "AppSessionData"|"AppConfigData";
 
 // export interface IAppSessionDataProps{
 //     LastDocumentId:string;
@@ -44,14 +44,17 @@ abstract class AppSettingsBase {
     }
 }
 
+
 export interface IAppSession{
     PlCfg_SayAnswer:boolean;
     PlCfg_ListenAnswer:boolean;
+    PlCfg_DefaultPageUrl:string;
 }
 
 const AppSessionDataDefaultValues:IAppSession = {
     PlCfg_SayAnswer:false,
-    PlCfg_ListenAnswer:true
+    PlCfg_ListenAnswer:true,
+    PlCfg_DefaultPageUrl:"SpeechPlayerGD"
 }
 
 export type TAppSesstionDataProps = keyof typeof AppSessionDataDefaultValues;

@@ -1,0 +1,6 @@
+.ddown_container{
+    min-width: 200px;
+    font-size: 20px;
+    border-radius: 5px;
+    border: solid 2px grey;
+}
