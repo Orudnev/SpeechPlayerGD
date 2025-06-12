@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import './InputWord.css';
 
 interface WordChar {
@@ -6,28 +6,33 @@ interface WordChar {
   revealed: boolean;
 }
 
-interface InputWordProps {
-  questionString:string;
-  answerString: string;
+
+export interface InputWordProps {
   onComplete: () => void;
-  showAnswer?:boolean;
 }
 
-const InputWord: React.FC<InputWordProps> = ({ questionString,answerString, onComplete,showAnswer }) => {
-  const initialWords = answerString.split(' ').map(word => 
-    word.split('').map(char => ({ char, revealed: false }))
-  );
+export interface InputWordsMethods{
+  loadNewItem:(questionStr:string, answerStr: string)=>void;
+}
 
-  const [words, setWords] = useState<WordChar[][]>(initialWords);
+
+const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
+
+  const [words, setWords] = useState<WordChar[][]>([[{char:'',revealed:false}]]);
   const [currentPosition, setCurrentPosition] = useState({
-    wordIndex: 0, 
-    charIndex: 0 
+    wordIndex: 0,
+    charIndex: 0
   });
+  const [questionStr, setQuestionStr] = useState('');
+  const [answerStr, setAnswerStr] = useState('');
   const [message, setMessage] = useState('');
+  const [showAnswer, setShowAnswer] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const hasHiddenChars = words.some(word => word.some(char => !char.revealed && !showAnswer));
+
+  const hasHiddenChars = words?words.some(word => word.some(char => !char.revealed && !showAnswer)):false;
+
   const focusInput = () => {
     if (inputRef.current) {
       // Создаем фейковое событие для мобильных устройств
@@ -49,10 +54,21 @@ const InputWord: React.FC<InputWordProps> = ({ questionString,answerString, onCo
     }
   };
 
+  useImperativeHandle(ref, () => ({
+    loadNewItem(questionStr: string, answerStr: string) {
+      const initialWords = answerStr.split(' ').map(word =>
+        word.split('').map(char => ({ char, revealed: false }))
+      );
+      setQuestionStr(questionStr);
+      setAnswerStr(answerStr);
+      setWords(initialWords);
+    }
+  })); 
+
   useEffect(() => {
     // Задержка для корректного открытия клавиатуры на мобильных
     const timer = setTimeout(focusInput, 300);
-    
+
     // Обработчик для повторного фокуса при тапе
     const handleTap = () => {
       if (hasHiddenChars) {
@@ -62,7 +78,7 @@ const InputWord: React.FC<InputWordProps> = ({ questionString,answerString, onCo
 
     const container = containerRef.current;
     container?.addEventListener('click', handleTap);
-    
+
     return () => {
       clearTimeout(timer);
       container?.removeEventListener('click', handleTap);
@@ -71,8 +87,9 @@ const InputWord: React.FC<InputWordProps> = ({ questionString,answerString, onCo
 
   const handleCharInput = (char: string) => {
     if (!hasHiddenChars) return;
- 
+
     const { wordIndex, charIndex } = currentPosition;
+    if (!words) return;
     if (wordIndex >= words.length || charIndex >= words[wordIndex].length) return;
 
     const currentWordChar = words[wordIndex][charIndex];
@@ -84,22 +101,22 @@ const InputWord: React.FC<InputWordProps> = ({ questionString,answerString, onCo
       newWords[wordIndex][charIndex] = { ...currentWordChar, revealed: true };
       setWords(newWords);
       setMessage('');
-      
+
       let nextWordIndex = wordIndex;
       let nextCharIndex = charIndex + 1;
-      
+
       if (nextCharIndex >= words[wordIndex].length) {
         nextWordIndex++;
         nextCharIndex = 0;
       }
-      
+
       if (nextWordIndex < words.length) {
         setCurrentPosition({ wordIndex: nextWordIndex, charIndex: nextCharIndex });
       } else {
         setMessage('Все символы раскрыты!');
         setWords([]);
         setCurrentPosition({ wordIndex: 0, charIndex: 0 });
-        onComplete();
+        props.onComplete();
       }
     } else {
       setMessage('Неверная буква, попробуйте еще раз');
@@ -107,36 +124,36 @@ const InputWord: React.FC<InputWordProps> = ({ questionString,answerString, onCo
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const char = e.target.value.slice(-1).toLowerCase();    
+    const char = e.target.value.slice(-1).toLowerCase();
     handleCharInput(char);
     e.target.value = '';
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key.length === 1 ) {
+    if (e.key.length === 1) {
       handleCharInput(e.key.toLowerCase());
-     e.preventDefault();
+      e.preventDefault();
     }
   };
 
-  if(words.length === 0 && initialWords.length>0){
-    setWords(initialWords);
-  } 
+  // if (words.length === 0 && initialWords.length > 0) {
+  //   setWords(initialWords);
+  // }
 
-  let msg = hasHiddenChars   ? message : 'Все символы раскрыты!';
-  if(!answerString) msg = "";
+  let msg = hasHiddenChars ? message : 'Все символы раскрыты!';
+  // if (!props.answerString) msg = "";
   
   return (
-    <div ref={containerRef} className="input-word" style={{ cursor: 'pointer' }}   onClick={focusInput}>
-      <h1 className="input-word__question">{questionString}</h1>
+    <div ref={containerRef} className="input-word" style={{ cursor: 'pointer' }} onClick={focusInput}>
+      <h1 className="input-word__question">{questionStr}</h1>
       <div className="input-word__container">
         {words.map((word, wordIndex) => (
           <div key={`word-${wordIndex}`} className="input-word__word">
             {word.map((char, charIndex) => {
-              const isActive = wordIndex === currentPosition.wordIndex && 
-                             charIndex === currentPosition.charIndex && 
-                             hasHiddenChars;
-              
+              const isActive = wordIndex === currentPosition.wordIndex &&
+                charIndex === currentPosition.charIndex &&
+                hasHiddenChars;
+
               return (
                 <div
                   key={`cell-${wordIndex}-${charIndex}`}
@@ -157,12 +174,12 @@ const InputWord: React.FC<InputWordProps> = ({ questionString,answerString, onCo
           </div>
         ))}
       </div>
-      
+
       <div className={`
         input-word__message
         ${message.includes('Неверная') ? 'input-word__message--error' : ''}
       `}>
-        { msg}
+        {msg}
       </div>
 
       <input
@@ -182,6 +199,6 @@ const InputWord: React.FC<InputWordProps> = ({ questionString,answerString, onCo
       />
     </div>
   );
-};
+});
 
 export default InputWord;

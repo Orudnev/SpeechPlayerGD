@@ -45,7 +45,7 @@ export function filterUniqueByProperty(arr:any[], property:string) {
   );
 }
 
-export type TCrosswordPageStatus = "Loading..."|"Stopped"|"Started";
+export type TCrosswordPageStatus = "Loading..."|"Stopped"|"Started"|"ShowAnswer"|"LoadNewItem";
 
 export type TPlayerStatus = 'Loading' | 'Pause' | 'SayQuestion' | 'SayAnswer' | 'WaitAnswerToBeStarted' | 'WaitAnswerInProcess' | 'AnswerIsCorrect' | 'AnswerIsFailed' | 'WaitNextItem';
 
