@@ -34,16 +34,16 @@ export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void){
                 let items:IItem[] = [];
                 itemsSrc.forEach((itm) => {
                     let newItm:IItem = {
-                            uid:itm.uid,
-                            q:{lang:'en-US',text:itm.En},
-                            a:{lang:'ru-RU',text:itm.Ru},
-                            r:{lcnt:itm.lcnt?itm.lcnt:0,
+                            uid:itm.Uid,
+                            q:{lang:'ru-RU',text:itm.Ru},
+                            a:{lang:'en-US',text:itm.En},
+                            r:{lcnt:itm.lcnt?itm.Lcnt:0,
                                 Asf:itm.Asf?itm.Asf:0,
                                 Asr:itm.Asr?itm.Asr:0,
                                 Aer:itm.Aer?itm.Aer:0,
                                 Aef:itm.Aef?itm.Aef:0,
                                 Aw:itm.Aw?itm.Aw:0,
-                                ts:itm.ts?itm.ts:0}};
+                                ts:itm.ts?itm.Ts:0}};
                     items.push(newItm);
                 });
                 response.data.data = items;

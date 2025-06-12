@@ -1,4 +1,5 @@
 import { Lesson1 } from "./App";
+import { CrosswordMemorizer } from "./Components/CrosswordMemorizer";
 import { PhraseMemorizer } from "./Components/PhraseMemorizer";
 
 export type TLanguage = 'en-US' | 'ru-RU';
@@ -36,14 +37,15 @@ export interface IAppPage {
 export const AppPages: IAppPage[] = [
   { path: "/", title: "Voice page", getElement: () => { return <PhraseMemorizer /> }},
   { path: "/SpeechPlayerGD", title: "Voice page", getElement: () => { return <PhraseMemorizer /> } },
-  { path: "/SpeechPlayerGD/Lesson1", title: "Lesson1", getElement: () => { return <Lesson1 /> } }
+  { path: "/CrossWord", title: "Crossword page", getElement: () => { return <CrosswordMemorizer /> } }
 ];
 export function filterUniqueByProperty(arr:any[], property:string) {
   return arr.filter((obj, index, self) =>
     index === self.findIndex(o => o[property] === obj[property])
   );
 }
-  
+
+export type TCrosswordPageStatus = "Loading..."|"Stopped"|"Started";
 
 export type TPlayerStatus = 'Loading' | 'Pause' | 'SayQuestion' | 'SayAnswer' | 'WaitAnswerToBeStarted' | 'WaitAnswerInProcess' | 'AnswerIsCorrect' | 'AnswerIsFailed' | 'WaitNextItem';
 

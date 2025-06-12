@@ -1,0 +1,111 @@
+.input-word {
+  text-align: center;
+  padding: 15px;
+  max-width: 100%;
+  overflow-x: hidden;
+  position: relative;
+  -webkit-tap-highlight-color: transparent; /* Убираем подсветку при тапе */
+  min-height: 100vh; /* Для лучшей области клика */ 
+  touch-action: manipulation; 
+}
+
+.input-word__question{
+  color: #333;
+  margin: 15px 0 25px;
+  font-size: 24px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.input-word__container {
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.input-word__word {
+  display: flex;
+  gap: 3px;
+}
+
+.input-word__cell {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #333;
+  font-size: 22px;
+  font-weight: bold;
+  background: white;
+  border-radius: 4px;
+  user-select: none;
+}
+
+.input-word__cell--active {
+  border-color: #ff5722;
+  box-shadow: 0 0 0 3px #ff5722;
+}
+
+.input-word__cell--revealed {
+  background: #f5f5f5;
+  color: #2e7d32;
+}
+
+.input-word__char {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+.input-word__message {
+  font-size: 18px;
+  margin: 15px 0;
+  min-height: 24px;
+  animation: fadeIn 0.3s ease;
+}
+
+.input-word__message--error {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+.input-word__native-input {
+  position: absolute;
+  opacity: 0.5;
+  width: 100;
+  height: 10;
+  padding: 0;
+  margin: 0;
+  border: none;
+  outline: none;
+}
+
+.input-word__native-input {
+  /* Обновленные стили для мобильных */
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  font-size: 16px !important; /* Важно для iOS */
+  opacity: 0;
+  background: transparent;
+  border: none;
+  color: transparent;
+  caret-color: transparent; /* Скрываем курсор */
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+  .input-word__cell {
+    width: 35px;
+    height: 35px;
+    font-size: 20px;
+  }
+}
