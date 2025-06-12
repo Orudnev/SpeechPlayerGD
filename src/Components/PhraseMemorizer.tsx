@@ -35,24 +35,17 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
     }
 
     componentDidMount(): void {
-        // let itemlist: IItem[] = [
-        //     { q: { lang: 'en-US', text: 'red roses too' }, a: { lang: 'ru-RU', text: 'красные розы тоже' }, r: undefined },
-        //     { q: { lang: 'en-US', text: 'apple' }, a: { lang: 'ru-RU', text: 'яблоко' }, r: undefined },
-        //     { q: { lang: 'en-US', text: 'cucumber' }, a: { lang: 'ru-RU', text: 'кукумбер' }, r: undefined }
-        // ]; 
-        waw.GetAllRows((resp) => {
-            if (resp.isOk) {
-                this.maxStoredTs = resp.result.filter(itm => itm.r && itm.r.ts)
-                    .reduce(function (acc, itm) {
-                        if (itm.r && itm.r.ts && itm.r.ts > acc) {
-                            acc = itm.r.ts;
-                        }
-                        return acc;
-                    }, 0)
-                this.setState({ status: 'Pause', items: resp.result });
-            } else {
-                console.log(resp.error);
-            }
+        let shName  = AppSessionData.prop('PlCfg_DataSheetName');
+        waw.GetAllRows(shName,(resp) => {
+            if(resp.status == "ok")
+            this.maxStoredTs = resp.data.filter((itm:IItem) => itm.r && itm.r.ts)
+                .reduce(function (acc:any, itm:IItem) {
+                    if (itm.r && itm.r.ts && itm.r.ts > acc) {
+                        acc = itm.r.ts;
+                    }
+                    return acc;
+                }, 0)
+            this.setState({ status: 'Pause', items: resp.data.data});
         });
     }
 
@@ -149,8 +142,8 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
             if (!itmB.r) {
                 return 1;
             }
-            let ar = itmA.r.lcnt ? itmA.r.fsa / itmA.r.lcnt + itmA.r.rsa / itmA.r.lcnt : 0;
-            let br = itmB.r.lcnt ? itmB.r.fsa / itmB.r.lcnt + itmB.r.rsa / itmB.r.lcnt : 0;
+            let ar = itmA.r.lcnt ? itmA.r.Asf / itmA.r.lcnt + itmA.r.Asr / itmA.r.lcnt : 0;
+            let br = itmB.r.lcnt ? itmB.r.Asf / itmB.r.lcnt + itmB.r.Asr / itmB.r.lcnt : 0;
             if (ar === br) {
                 if (itmA.r.lcnt === itmB.r.lcnt) {
                     return itmA.r.ts - itmB.r.ts;
@@ -179,12 +172,13 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
             //console.log(forwardNextItem.q.text);
             return;
         }
-        if (forwardNextItem.r.fsa < forwardNextItem.r.rsa) {
+        if (forwardNextItem.r.Asf < forwardNextItem.r.Asr) {
             this.setState({ currentItem: forwardNextItem, cmpWordsResult: [], status: "SayQuestion" });
             //console.log(forwardNextItem.q.text);
             return;
         }
         let reverseNextItem: IItem = {
+            uid: forwardNextItem.uid,
             q: forwardNextItem.a,
             a: forwardNextItem.q,
             r: forwardNextItem.r
@@ -273,27 +267,30 @@ export class PhraseMemorizer extends React.Component<any, IPhraseMemorizerState>
                 srcCurrItem.r.ts = Date.now();
                 if (isForwardDirection) {
                     if (ok) {
-                        srcCurrItem.r.fsa++;
+                        srcCurrItem.r.Asf++;
                     }
                 } else {
                     if (ok) {
-                        srcCurrItem.r.rsa++;
+                        srcCurrItem.r.Asr++;
                     }
                 }
             } else {
                 srcCurrItem.r = {
                     lcnt: 1,
-                    fsa: 0,
-                    rsa: 0,
+                    Asf: 0,
+                    Asr: 0,
+                    Aef:0,
+                    Aer:0,
+                    Aw:0,
                     ts: Date.now()
                 }
                 if (isForwardDirection) {
                     if (ok) {
-                        srcCurrItem.r.fsa++;
+                        srcCurrItem.r.Asf++;
                     }
                 } else {
                     if (ok) {
-                        srcCurrItem.r.rsa++;
+                        srcCurrItem.r.Aer++;
                     }
                 }
             }

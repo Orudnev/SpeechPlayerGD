@@ -4,6 +4,7 @@ import { AppSessionData, TAppSesstionDataProps } from './AppData';
 import Switch from './Switch/Switch';
 import DropDownBox, { IDropDownProps } from './DropDownBox/DropDownBox';
 import { AppPages, filterUniqueByProperty } from '../CommonTypes';
+import * as waw from '../WebApiWrapper';
 
 export interface ISettingsBoolItemProps {
     labelText: string;
@@ -54,6 +55,12 @@ export interface ISettingsProps {
 }
 
 export function Settings(props: any) {
+    const [sheetNames,setSheetNames] = useState([]);
+    useEffect(() => {
+        waw.GetSheetNames((result) => {
+           setSheetNames(result.data);
+        });
+    },[])
     return (
         <div className='ph-mem'>
             <button className="toolbar-button" onClick={() => { props.onExit() }}>
@@ -61,7 +68,8 @@ export function Settings(props: any) {
             </button>
             <SettingsBoolItem labelText='Say answer' propId={'PlCfg_SayAnswer'} />
             <SettingsBoolItem labelText='Listen answer' propId={'PlCfg_ListenAnswer'} />
-            <SettingsDropDownItem labelText='Default page' propId='PlCfg_DefaultPageTitle' items={filterUniqueByProperty(AppPages, 'title')} selectedItem={'bbb'} onItemSelected={() => { }} displayMember='title' />
+            <SettingsDropDownItem labelText='Default page' propId='PlCfg_DefaultPageTitle' items={filterUniqueByProperty(AppPages, 'title')} selectedItem={''} onItemSelected={() => { }} displayMember='title' />
+            <SettingsDropDownItem labelText='Data sheet' propId='PlCfg_DataSheetName' items={sheetNames} selectedItem={''} onItemSelected={() => { }} displayMember='' />
         </div>
     );
 }

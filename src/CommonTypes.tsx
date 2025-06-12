@@ -9,13 +9,19 @@ export interface ISubItem {
 }
 
 export interface IResult {
-  lcnt: number;  //whole listening counter
-  fsa: number;   //forward (question->answer) succeded answers
-  rsa: number;   //reverse (answer->question) succeded answers 
+  lcnt: number;  // всего попыток
+  // fsa: number;   //forward (question->answer) succeded answers
+  // rsa: number;   //reverse (answer->question) succeded answers
+  Asf: number;     //Кол-во успешных ответов голосом прямых
+  Asr: number;     //Кол-во успешных ответов голосом обратных
+  Aef: number;     //Кол-во ошибочтых ответов голосом прямых
+  Aer: number;     //Кол-во ошибочных ответов голосом обратных
+  Aw: number;      //Кол-во успешных ответов письменных (прямых)
   ts: number;      //last access timestamp     
 }
 
 export interface IItem {
+  uid:string;
   q: ISubItem;
   a: ISubItem;
   r: IResult | undefined;

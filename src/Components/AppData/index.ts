@@ -49,12 +49,14 @@ export interface IAppSession{
     PlCfg_SayAnswer:boolean;
     PlCfg_ListenAnswer:boolean;
     PlCfg_DefaultPageTitle:string;
+    PlCfg_DataSheetName:string;
 }
 
 const AppSessionDataDefaultValues:IAppSession = {
     PlCfg_SayAnswer:false,
     PlCfg_ListenAnswer:true,
-    PlCfg_DefaultPageTitle:"SpeechPlayerGD"
+    PlCfg_DefaultPageTitle:"SpeechPlayerGD",
+    PlCfg_DataSheetName:""
 }
 
 export type TAppSesstionDataProps = keyof typeof AppSessionDataDefaultValues;

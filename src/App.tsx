@@ -88,9 +88,6 @@ export const Lesson1 = () => {
 }
 
 
-
-
-
 function App() {
   AppGlobal.init(useNavigate());
   //@ts-ignore
@@ -103,10 +100,7 @@ function App() {
       let pg = AppPages.find(p=>{return p.title==pgTitle;});
       AppGlobal.navigate(pg?.path);
     }
-    //AppGlobal.navigate("/SpeechPlayerGD/Lesson1");
   }, []);
-  //let as = AppSessionData.prop('LastRowSetGettingMethod');
-  //AppSessionData.prop('LastRowSetGettingMethod', "byrbyrbyr1");
   return (
     <div>
       <Routes>
@@ -117,8 +111,4 @@ function App() {
 }
 
 export default App;
-
-{/* <Route path={"/"} element={<PhraseMemorizer />} />
-<Route path={"/SpeechPlayerGD"} element={<PhraseMemorizer />} />
-<Route path={"/SpeechPlayerGD/Lesson1"} element={<Lesson1 />} /> */}
 
