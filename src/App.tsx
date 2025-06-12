@@ -98,6 +98,11 @@ function App() {
   let d = SRResultCmdDetector;
   
   useEffect(() => {
+    let pgTitle = AppSessionData.prop('PlCfg_DefaultPageTitle');
+    if(pgTitle){
+      let pg = AppPages.find(p=>{return p.title==pgTitle;});
+      AppGlobal.navigate(pg?.path);
+    }
     //AppGlobal.navigate("/SpeechPlayerGD/Lesson1");
   }, []);
   //let as = AppSessionData.prop('LastRowSetGettingMethod');

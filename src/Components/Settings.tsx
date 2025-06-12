@@ -61,7 +61,7 @@ export function Settings(props: any) {
             </button>
             <SettingsBoolItem labelText='Say answer' propId={'PlCfg_SayAnswer'} />
             <SettingsBoolItem labelText='Listen answer' propId={'PlCfg_ListenAnswer'} />
-            <SettingsDropDownItem labelText='Default page' propId='PlCfg_DefaultPageUrl' items={filterUniqueByProperty(AppPages, 'title')} selectedItem={'bbb'} onItemSelected={() => { }} displayMember='title' />
+            <SettingsDropDownItem labelText='Default page' propId='PlCfg_DefaultPageTitle' items={filterUniqueByProperty(AppPages, 'title')} selectedItem={'bbb'} onItemSelected={() => { }} displayMember='title' />
         </div>
     );
 }

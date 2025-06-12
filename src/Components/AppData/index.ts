@@ -48,13 +48,13 @@ abstract class AppSettingsBase {
 export interface IAppSession{
     PlCfg_SayAnswer:boolean;
     PlCfg_ListenAnswer:boolean;
-    PlCfg_DefaultPageUrl:string;
+    PlCfg_DefaultPageTitle:string;
 }
 
 const AppSessionDataDefaultValues:IAppSession = {
     PlCfg_SayAnswer:false,
     PlCfg_ListenAnswer:true,
-    PlCfg_DefaultPageUrl:"SpeechPlayerGD"
+    PlCfg_DefaultPageTitle:"SpeechPlayerGD"
 }
 
 export type TAppSesstionDataProps = keyof typeof AppSessionDataDefaultValues;
