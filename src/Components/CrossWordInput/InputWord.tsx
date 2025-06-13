@@ -13,6 +13,7 @@ export interface InputWordProps {
 
 export interface InputWordsMethods{
   loadNewItem:(questionStr:string, answerStr: string)=>void;
+  showAnswer:(show:boolean)=>void;
 }
 
 
@@ -62,7 +63,10 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
       setQuestionStr(questionStr);
       setAnswerStr(answerStr);
       setWords(initialWords);
-    }
+    },
+    showAnswer(show) {
+      setShowAnswer(show);
+    },
   })); 
 
   useEffect(() => {

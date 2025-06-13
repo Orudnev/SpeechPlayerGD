@@ -46,10 +46,13 @@ export function CrosswordMemorizer() {
         });
     }, []);
     const handleBtnNextClick = () => {
-        if (status === "Started") {
-            setStatus("ShowAnswer")
+        if (status !== "ShowAnswer") {
+            setStatus("ShowAnswer");
+            inpWordRef.current?.showAnswer(true);
         }
         if (status === "ShowAnswer") {
+            setStatus("Started");
+            inpWordRef.current?.showAnswer(false);
             goNextItem();
         }
     };
