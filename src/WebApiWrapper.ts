@@ -24,7 +24,7 @@ export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void){
     axios({
         url:webApiBaseUrl,
         method:'GET',
-        params:{method:'getAllRows',sheetName:'EmoLvl1-2'}
+        params:{method:'getAllRows',sheetName:shName}
     })
     .then((response:any)=>{
         if(handler){
@@ -37,7 +37,7 @@ export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void){
                             uid:itm.Uid,
                             q:{lang:'ru-RU',text:itm.Ru},
                             a:{lang:'en-US',text:itm.En},
-                            r:{lcnt:itm.lcnt?itm.Lcnt:0,
+                            r:{lcnt:itm.Lcnt?itm.Lcnt:0,
                                 Asf:itm.Asf?itm.Asf:0,
                                 Asr:itm.Asr?itm.Asr:0,
                                 Aer:itm.Aer?itm.Aer:0,
@@ -60,6 +60,26 @@ export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void){
         }
     }
     );
+}
+
+
+
+export function UpdateRows(shName:string,rows:any[]){
+    const encoder = new TextEncoder();
+    const encodedBytes:Uint8Array = encoder.encode(JSON.stringify(rows));
+    let binaryString:string = "";    
+    encodedBytes.forEach(byte => {
+        binaryString += String.fromCharCode(byte);
+    });
+    const encodedBase64Rows: string = btoa(binaryString);
+    axios({
+        url:webApiBaseUrl,
+        method:'GET',
+        params:{method:'updateRows',sheetName:shName,rows:encodedBase64Rows}
+    })
+    .then((response:any)=>{
+        let s = response;
+    });
 }
 
 export function storeResult(resultItems:IItem[]){

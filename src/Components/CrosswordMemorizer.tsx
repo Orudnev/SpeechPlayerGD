@@ -4,12 +4,46 @@ import { AppSessionData } from './AppData';
 import * as waw from '../WebApiWrapper';
 import InputWord, { InputWordsMethods } from './CrossWordInput/InputWord';
 import { SayText } from './SayText';
+import { Settings } from './Settings';
+
+function UpdateItemRating(currItem: IItem, addSuccessCount: boolean): void {
+    if (!currItem.r) {
+        currItem.r = { Asf: 0, Aw: 0, Aef: 0, Aer: 0, Asr: 0, lcnt: 0, ts: 0 };
+    }
+    if (addSuccessCount) {
+        currItem.r.Asf++;
+        return;
+    }
+    currItem.r.lcnt++;
+    currItem.r.ts = Date.now();
+    SendItemRatingsToServer([currItem]);
+}
+ 
+function SendItemRatingsToServer(items: IItem[]) {
+    let rows = items.map(itm => {
+        let row = {
+            Uid: itm.uid,
+            En: itm.a.text,
+            Ru: itm.q.text,
+            Lcnt: itm.r?.lcnt,
+            Asf: itm.r?.Asf,
+            Asr: itm.r?.Asr,
+            Aer: itm.r?.Aer,
+            Aef: itm.r?.Aef,
+            Ts: itm.r?.ts
+        }
+        return row;
+    });
+    const shName = AppSessionData.prop('PlCfg_DataSheetName');
+    waw.UpdateRows(shName, rows);
+}
 
 export function CrosswordMemorizer() {
     const inpWordRef = useRef<InputWordsMethods>(null);
     const [status, setStatus] = useState<TCrosswordPageStatus>('Loading...');
     const [items, setItems] = useState<IItem[]>([]);
     const [currentItem, setCurrentItem] = useState<IItem | undefined>(undefined);
+    const [isSettingsMode, setIsSettingsMode] = useState<boolean>(false);
     let classBtnStartStop = status === 'Stopped' || status === 'Loading...' ? 'img-btn img-power-off' : 'img-btn img-power-on';
     const handleBtnStartStopClick = () => {
         if (status === 'Started') {
@@ -22,21 +56,37 @@ export function CrosswordMemorizer() {
         }
     };
     const goNextItem = () => {
-        let currIndex = items.findIndex(itm => itm.uid === currentItem?.uid);
-        let nextIndex = currIndex + 1;
-        let currItem = items[0];
-        if (nextIndex < items.length - 1) {
-            currItem = items[nextIndex];
+        if (currentItem) {
+            UpdateItemRating(currentItem, false);
         }
-        if (inpWordRef.current && currItem ) {
+        let currItem = items.reduce((acc, curr) => {
+            if(acc.r && curr.r){ 
+                if(curr.r.lcnt < acc.r.lcnt) {
+                    return curr;
+                }
+                if(curr.r.Aef < acc.r.Aef) {
+                    return curr;
+                }
+                if(curr.r.ts < acc.r.ts) {
+                    return curr;
+                }
+            } 
+            return acc;
+        },items[0]);
+        if (inpWordRef.current && currItem) {
             inpWordRef.current.loadNewItem(currItem.q.text, currItem.a.text);
             setStatus("Started");
         }
-        setCurrentItem(currItem);
+        setCurrentItem(currItem); 
         setStatus("LoadNewItem");
     }
 
     const shName = AppSessionData.prop('PlCfg_DataSheetName');
+    if(!shName) {
+        setTimeout(() => {
+            setIsSettingsMode(true);            
+        }, 0);
+    }
     useEffect(() => {
         waw.GetAllRows(shName, (resp: waw.IApiResponse) => {
             if (resp.data.status == "ok") {
@@ -46,14 +96,14 @@ export function CrosswordMemorizer() {
         });
     }, []);
 
-    const sayAnswer = (onComplete?:()=>void) => { 
-        if(currentItem) {
-            let sbItem:ISubItem = {text:currentItem.a.text,lang:currentItem.a.lang};
-            SayText.addMessage(sbItem,()=>{
-                if(onComplete) {
+    const sayAnswer = (onComplete?: () => void) => {
+        if (currentItem) {
+            let sbItem: ISubItem = { text: currentItem.a.text, lang: currentItem.a.lang };
+            SayText.addMessage(sbItem, () => {
+                if (onComplete) {
                     onComplete();
                 }
-            });                    
+            });
         }
     };
     const handleBtnNextClick = () => {
@@ -70,6 +120,9 @@ export function CrosswordMemorizer() {
     };
 
     const handleBtnSettingsClick = () => { };
+    if (isSettingsMode) {
+        return (<Settings onExit={() => setIsSettingsMode(false)}  />);
+    }    
     return (
         <div className='ph-mem'>
             {status == 'Loading...' && <div>loading...</div>}
@@ -87,9 +140,13 @@ export function CrosswordMemorizer() {
                 </div>
 
             )}
+            
             <InputWord ref={inpWordRef}
                 onComplete={() => {
-                    sayAnswer(()=>goNextItem());
+                    if (currentItem) {
+                        UpdateItemRating(currentItem, true);
+                    }
+                    sayAnswer(() => goNextItem());
                 }} />
         </div>
     );

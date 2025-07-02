@@ -26,7 +26,7 @@ export interface ISettingsDropDownItemProps extends IDropDownProps {
 }
 export function SettingsDropDownItem(props: ISettingsDropDownItemProps) {
     let selectedItemTitle = AppSessionData.prop(props.propId);
-    let selectedItem = "";
+    let selectedItem:any = "";
     if(selectedItemTitle){
         selectedItem = props.items.find(itm=>{
             if(props.displayMember){
@@ -34,6 +34,11 @@ export function SettingsDropDownItem(props: ISettingsDropDownItemProps) {
             } 
             return itm===selectedItemTitle;
         });
+    } else {
+        if(props.items.length>0) selectedItem = props.items[0];
+        let storedValue:any = selectedItem;
+        if(props.displayMember) storedValue = selectedItem[props.displayMember];
+        AppSessionData.prop(props.propId,storedValue);
     }
     return (
         <div className="settings-bool-item">
@@ -69,7 +74,9 @@ export function Settings(props: any) {
             <SettingsBoolItem labelText='Say answer' propId={'PlCfg_SayAnswer'} />
             <SettingsBoolItem labelText='Listen answer' propId={'PlCfg_ListenAnswer'} />
             <SettingsDropDownItem labelText='Default page' propId='PlCfg_DefaultPageTitle' items={filterUniqueByProperty(AppPages, 'title')} selectedItem={''} onItemSelected={() => { }} displayMember='title' />
-            <SettingsDropDownItem labelText='Data sheet' propId='PlCfg_DataSheetName' items={sheetNames} selectedItem={''} onItemSelected={() => { }} displayMember='' />
+            <SettingsDropDownItem labelText='Data sheet' propId='PlCfg_DataSheetName' items={sheetNames} selectedItem={AppSessionData.prop('PlCfg_DataSheetName')} 
+            onItemSelected={(selItem: any) => { 
+            }} displayMember='' />
         </div>
     );
 }
