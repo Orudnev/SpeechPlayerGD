@@ -1,8 +1,9 @@
 import React, { useReducer, useEffect, useState, useRef } from 'react';
-import { IItem, TCrosswordPageStatus } from '../CommonTypes';
+import { IItem, ISubItem, TCrosswordPageStatus } from '../CommonTypes';
 import { AppSessionData } from './AppData';
 import * as waw from '../WebApiWrapper';
 import InputWord, { InputWordsMethods } from './CrossWordInput/InputWord';
+import { SayText } from './SayText';
 
 export function CrosswordMemorizer() {
     const inpWordRef = useRef<InputWordsMethods>(null);
@@ -35,7 +36,6 @@ export function CrosswordMemorizer() {
         setStatus("LoadNewItem");
     }
 
-
     const shName = AppSessionData.prop('PlCfg_DataSheetName');
     useEffect(() => {
         waw.GetAllRows(shName, (resp: waw.IApiResponse) => {
@@ -45,10 +45,22 @@ export function CrosswordMemorizer() {
             }
         });
     }, []);
+
+    const sayAnswer = (onComplete?:()=>void) => { 
+        if(currentItem) {
+            let sbItem:ISubItem = {text:currentItem.a.text,lang:currentItem.a.lang};
+            SayText.addMessage(sbItem,()=>{
+                if(onComplete) {
+                    onComplete();
+                }
+            });                    
+        }
+    };
     const handleBtnNextClick = () => {
         if (status !== "ShowAnswer") {
             setStatus("ShowAnswer");
             inpWordRef.current?.showAnswer(true);
+            sayAnswer();
         }
         if (status === "ShowAnswer") {
             setStatus("Started");
@@ -56,6 +68,7 @@ export function CrosswordMemorizer() {
             goNextItem();
         }
     };
+
     const handleBtnSettingsClick = () => { };
     return (
         <div className='ph-mem'>
@@ -76,7 +89,7 @@ export function CrosswordMemorizer() {
             )}
             <InputWord ref={inpWordRef}
                 onComplete={() => {
-                    goNextItem();
+                    sayAnswer(()=>goNextItem());
                 }} />
         </div>
     );

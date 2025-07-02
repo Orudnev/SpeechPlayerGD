@@ -19,7 +19,7 @@ export interface InputWordsMethods{
 
 const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
 
-  const [words, setWords] = useState<WordChar[][]>([[{char:'',revealed:false}]]);
+  const [words, setWords] = useState<WordChar[][]>([[]]);
   const [currentPosition, setCurrentPosition] = useState({
     wordIndex: 0,
     charIndex: 0
@@ -32,7 +32,7 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
 
-  const hasHiddenChars = words?words.some(word => word.some(char => !char.revealed && !showAnswer)):false;
+  const hasHiddenChars = words?words.some(word => word.some(char => !char.revealed && !showAnswer)) || words.length == 0 || words[0].length === 0:false;
 
   const focusInput = () => {
     if (inputRef.current) {
@@ -60,6 +60,7 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
       const initialWords = answerStr.split(' ').map(word =>
         word.split('').map(char => ({ char, revealed: false }))
       );
+      setCurrentPosition({ wordIndex: 0, charIndex: 0 });
       setQuestionStr(questionStr);
       setAnswerStr(answerStr);
       setWords(initialWords);
@@ -117,9 +118,9 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
       if (nextWordIndex < words.length) {
         setCurrentPosition({ wordIndex: nextWordIndex, charIndex: nextCharIndex });
       } else {
-        setMessage('Все символы раскрыты!');
-        setWords([]);
-        setCurrentPosition({ wordIndex: 0, charIndex: 0 });
+        //setMessage('Все символы раскрыты!');
+        //setWords([]);
+        //setCurrentPosition({ wordIndex: 0, charIndex: 0 });
         props.onComplete();
       }
     } else {
