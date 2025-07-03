@@ -64,7 +64,7 @@ export function CrosswordMemorizer() {
                 if(curr.r.lcnt < acc.r.lcnt) {
                     return curr;
                 }
-                if(curr.r.Aef < acc.r.Aef) {
+                if(curr.r.Asf < acc.r.Asf) {
                     return curr;
                 }
                 if(curr.r.ts < acc.r.ts) {
