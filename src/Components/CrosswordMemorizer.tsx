@@ -18,7 +18,7 @@ function UpdateItemRating(currItem: IItem, addSuccessCount: boolean): void {
     currItem.r.ts = Date.now();
     SendItemRatingsToServer([currItem]);
 }
- 
+
 function SendItemRatingsToServer(items: IItem[]) {
     let rows = items.map(itm => {
         let row = {
@@ -44,6 +44,7 @@ export function CrosswordMemorizer() {
     const [items, setItems] = useState<IItem[]>([]);
     const [currentItem, setCurrentItem] = useState<IItem | undefined>(undefined);
     const [isSettingsMode, setIsSettingsMode] = useState<boolean>(false);
+    const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
     let classBtnStartStop = status === 'Stopped' || status === 'Loading...' ? 'img-btn img-power-off' : 'img-btn img-power-on';
     const handleBtnStartStopClick = () => {
         if (status === 'Started') {
@@ -59,32 +60,34 @@ export function CrosswordMemorizer() {
         if (currentItem) {
             UpdateItemRating(currentItem, false);
         }
+        const minIntervalMs = 3000;
         let currItem = items.reduce((acc, curr) => {
-            if(acc.r && curr.r){ 
-                if(curr.r.lcnt < acc.r.lcnt) {
+            let currTs = Date.now();
+            if (acc.r && curr.r) {
+                if (currTs - curr.r.ts < 3000) {
+                    return acc;
+                }
+                if (curr.r.lcnt < acc.r.lcnt) {
                     return curr;
                 }
-                if(curr.r.Asf < acc.r.Asf) {
+                if (curr.r.lcnt < acc.r.lcnt && curr.r.Asf < acc.r.Asf) {
                     return curr;
                 }
-                if(curr.r.ts < acc.r.ts) {
-                    return curr;
-                }
-            } 
+            }
             return acc;
-        },items[0]);
+        }, items[0]);
         if (inpWordRef.current && currItem) {
             inpWordRef.current.loadNewItem(currItem.q.text, currItem.a.text);
             setStatus("Started");
         }
-        setCurrentItem(currItem); 
+        setCurrentItem(currItem);
         setStatus("LoadNewItem");
     }
 
     const shName = AppSessionData.prop('PlCfg_DataSheetName');
-    if(!shName) {
+    if (!shName) {
         setTimeout(() => {
-            setIsSettingsMode(true);            
+            setIsSettingsMode(true);
         }, 0);
     }
     useEffect(() => {
@@ -99,7 +102,9 @@ export function CrosswordMemorizer() {
     const sayAnswer = (onComplete?: () => void) => {
         if (currentItem) {
             let sbItem: ISubItem = { text: currentItem.a.text, lang: currentItem.a.lang };
+            setIsSpeaking(true);
             SayText.addMessage(sbItem, () => {
+                setIsSpeaking(false);
                 if (onComplete) {
                     onComplete();
                 }
@@ -119,10 +124,15 @@ export function CrosswordMemorizer() {
         }
     };
 
-    const handleBtnSettingsClick = () => { };
+    const handleBtnSettingsClick = () => setIsSettingsMode(true) ;
+    const handleBtnSoundClick = () => {
+
+        sayAnswer();
+    };
     if (isSettingsMode) {
-        return (<Settings onExit={() => setIsSettingsMode(false)}  />);
-    }    
+        return (<Settings onExit={() => setIsSettingsMode(false)} />);
+    }
+    const soundBtnClass = isSpeaking ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';
     return (
         <div className='ph-mem'>
             {status == 'Loading...' && <div>loading...</div>}
@@ -137,10 +147,13 @@ export function CrosswordMemorizer() {
                     <button className="toolbar-button" onClick={() => handleBtnSettingsClick()}>
                         <div className="img-btn img-config" />
                     </button>
+                    <button className={soundBtnClass}  onClick={() => handleBtnSoundClick()}>
+                        <div className="img-btn img-sound" />
+                    </button>
                 </div>
 
             )}
-            
+
             <InputWord ref={inpWordRef}
                 onComplete={() => {
                     if (currentItem) {

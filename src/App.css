@@ -26,6 +26,10 @@
     margin-right: 10px;
 }
 
+.toolbar-button_pressed{
+    background-color: lightgreen;
+}
+
 .toolbar-button__enabled {
     background-color: #d3ffd3;
 }
@@ -35,6 +39,8 @@
     color: lightgray;
     border-color: lightgray;
 }
+
+
 
 .ph-mem__header{
     font-size: 40px;
