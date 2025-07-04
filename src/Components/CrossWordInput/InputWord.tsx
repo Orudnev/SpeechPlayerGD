@@ -14,6 +14,7 @@ export interface InputWordProps {
 export interface InputWordsMethods{
   loadNewItem:(questionStr:string, answerStr: string)=>void;
   showAnswer:(show:boolean)=>void;
+  inputAnswerProgrammatically:(inputStr: string[])=>void;
 }
 
 
@@ -31,8 +32,8 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-
-  const hasHiddenChars = words?words.some(word => word.some(char => !char.revealed && !showAnswer)) || words.length == 0 || words[0].length === 0:false;
+  const calcHasHiddenChars = () => words?words.some(word => word.some(char => !char.revealed && !showAnswer)) || words.length == 0 || words[0].length === 0:false;
+  const hasHiddenChars = calcHasHiddenChars();
 
   const focusInput = () => {
     if (inputRef.current) {
@@ -68,6 +69,30 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
     showAnswer(show) {
       setShowAnswer(show);
     },
+    inputAnswerProgrammatically(inpWords: string[]) {
+      const newWords = [...words];
+      let charIndexGlb = -1;
+      let inpStr = inpWords.reduce((acc,word)=>{
+        return acc+word;
+      })
+      console.log(inpStr);
+      newWords.forEach((word,wrdIndex)=>{
+        word.forEach((ch,charIndex)=>{
+          charIndexGlb++;
+          if(ch.revealed) return;
+          if(charIndexGlb >= inpStr.length) return;
+          let inpChar = inpStr.charAt(charIndexGlb).toLocaleLowerCase();
+          if (ch.char.toLocaleLowerCase() === inpChar) {
+            ch.revealed = true;
+            setCurrentPosition({ wordIndex: wrdIndex, charIndex: charIndex+1 });
+            if(calcHasHiddenChars()){
+              props.onComplete();
+            }
+          }
+        });
+      });
+      //setWords(newWords);
+    }
   })); 
 
   useEffect(() => {

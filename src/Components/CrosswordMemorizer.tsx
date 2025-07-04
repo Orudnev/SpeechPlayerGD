@@ -5,6 +5,7 @@ import * as waw from '../WebApiWrapper';
 import InputWord, { InputWordsMethods } from './CrossWordInput/InputWord';
 import { SayText } from './SayText';
 import { Settings } from './Settings';
+import { SpeechRecognizer } from './SR/SpeechRecognizer';
 
 function UpdateItemRating(currItem: IItem, addSuccessCount: boolean): void {
     if (!currItem.r) {
@@ -45,6 +46,7 @@ export function CrosswordMemorizer() {
     const [currentItem, setCurrentItem] = useState<IItem | undefined>(undefined);
     const [isSettingsMode, setIsSettingsMode] = useState<boolean>(false);
     const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+    const [isMicrophoneOn, setIsMicrophoneOn] = useState<boolean>(false);
     let classBtnStartStop = status === 'Stopped' || status === 'Loading...' ? 'img-btn img-power-off' : 'img-btn img-power-on';
     const handleBtnStartStopClick = () => {
         if (status === 'Started') {
@@ -124,15 +126,15 @@ export function CrosswordMemorizer() {
         }
     };
 
-    const handleBtnSettingsClick = () => setIsSettingsMode(true) ;
+    const handleBtnSettingsClick = () => setIsSettingsMode(true);
     const handleBtnSoundClick = () => {
-
         sayAnswer();
     };
     if (isSettingsMode) {
         return (<Settings onExit={() => setIsSettingsMode(false)} />);
     }
     const soundBtnClass = isSpeaking ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';
+    const microphoneBtnClass = isMicrophoneOn ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';
     return (
         <div className='ph-mem'>
             {status == 'Loading...' && <div>loading...</div>}
@@ -147,13 +149,31 @@ export function CrosswordMemorizer() {
                     <button className="toolbar-button" onClick={() => handleBtnSettingsClick()}>
                         <div className="img-btn img-config" />
                     </button>
-                    <button className={soundBtnClass}  onClick={() => handleBtnSoundClick()}>
-                        <div className="img-btn img-sound" />
-                    </button>
+                    {currentItem &&
+                        <button className={soundBtnClass} onClick={() => handleBtnSoundClick()}>
+                            <div className="img-btn img-sound" />
+                        </button>
+                    }
+                    {currentItem &&
+                        <button className={microphoneBtnClass} onMouseDown={() => {
+                            setIsMicrophoneOn(true);
+                            //
+                        }} onMouseUp={() => {
+                            setIsMicrophoneOn(false);
+                        }}>
+                            <div className="img-btn img-microphoneOn" />
+                        </button>
+                    }
                 </div>
 
             )}
-
+            <SpeechRecognizer
+                onWordsRecognized={(words: string[])=>{
+                    inpWordRef.current?.inputAnswerProgrammatically(words);
+                }}
+                listening={isMicrophoneOn}
+                lang="en-US"
+            />
             <InputWord ref={inpWordRef}
                 onComplete={() => {
                     if (currentItem) {

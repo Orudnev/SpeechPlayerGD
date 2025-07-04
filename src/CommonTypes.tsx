@@ -1,6 +1,4 @@
-import { Lesson1 } from "./App";
 import { CrosswordMemorizer } from "./Components/CrosswordMemorizer";
-import { PhraseMemorizer } from "./Components/PhraseMemorizer";
 
 export type TLanguage = 'en-US' | 'ru-RU';
 
@@ -35,8 +33,8 @@ export interface IAppPage {
 }
 
 export const AppPages: IAppPage[] = [
-  { path: "/", title: "Voice page", getElement: () => { return <PhraseMemorizer /> }},
-  { path: "/SpeechPlayerGD", title: "Voice page", getElement: () => { return <PhraseMemorizer /> } },
+  { path: "/", title: "Voice page", getElement: () => { return <CrosswordMemorizer /> }},
+  { path: "/SpeechPlayerGD", title: "Voice page", getElement: () => { return <CrosswordMemorizer /> } },
   { path: "/CrossWord", title: "Crossword page", getElement: () => { return <CrosswordMemorizer /> } }
 ];
 export function filterUniqueByProperty(arr:any[], property:string) {
