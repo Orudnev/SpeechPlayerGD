@@ -13,6 +13,7 @@ function UpdateItemRating(currItem: IItem, addSuccessCount: boolean): void {
     }
     if (addSuccessCount) {
         currItem.r.Asf++;
+        if(currItem.r.Aef > 0) currItem.r.Aef--;
         return;
     }
     currItem.r.lcnt++;
@@ -59,28 +60,39 @@ export function CrosswordMemorizer() {
         }
     };
     const goNextItem = () => {
-        if (currentItem) {
-            UpdateItemRating(currentItem, false);
-        }
-        const minIntervalMs = 3000;
-        let currItem = items.reduce((acc, curr) => {
-            let currTs = Date.now();
-            if (acc.r && curr.r) {
-                if (currTs - curr.r.ts < 3000) {
-                    return acc;
+        const minIntervalSecond= 10;
+        const minInterval = minIntervalSecond * 1000;
+        const dtnow = Date.now();
+        const nextItems = items.filter(itm=>{
+            //1. отфильтровать элементы которые не использовались более minInterval
+            return itm.r && dtnow - itm.r.ts > minInterval;
+        })
+        .sort((a,b)=>{
+            if(a.r && b.r){
+                //2. Сортировать по Aef (отказ от ответа, большее количество повторений в начале)
+                let result = b.r.Aef - a.r.Aef; 
+                if(result){
+                    return result;
+                } 
+                //3. Сортировать по Lcnt (меньшие значения в начале)
+                result = a.r.lcnt - b.r.lcnt;
+                if(result !==0) {
+                    return result;
                 }
-                if (curr.r.lcnt < acc.r.lcnt) {
-                    return curr;
-                }
-                if (curr.r.lcnt < acc.r.lcnt && curr.r.Asf < acc.r.Asf) {
-                    return curr;
-                }
+                //3. Сортировать по Asf (количество правильных ответов, меньшие значения в начале)
+                result = a.r.Asf - b.r.Asf;
+                return result;
             }
-            return acc;
-        }, items[0]);
+            return 0;
+        });
+
+        let currItem = nextItems[0];
         if (inpWordRef.current && currItem) {
             inpWordRef.current.loadNewItem(currItem.q.text, currItem.a.text);
             setStatus("Started");
+        }
+        if (currentItem) {
+            UpdateItemRating(currentItem, false);
         }
         setCurrentItem(currItem);
         setStatus("LoadNewItem");
@@ -118,6 +130,10 @@ export function CrosswordMemorizer() {
             setStatus("ShowAnswer");
             inpWordRef.current?.showAnswer(true);
             sayAnswer();
+            let rptTimes = 5; //Количество повторений при отказе от ответа
+            if(currentItem && currentItem.r){
+                currentItem.r.Aef+=rptTimes;
+            }            
         }
         if (status === "ShowAnswer") {
             setStatus("Started");

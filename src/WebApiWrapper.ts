@@ -43,7 +43,7 @@ export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void){
                                 Aer:itm.Aer?itm.Aer:0,
                                 Aef:itm.Aef?itm.Aef:0,
                                 Aw:itm.Aw?itm.Aw:0,
-                                ts:itm.ts?itm.Ts:0}};
+                                ts:itm.Ts?itm.Ts:0}};
                     items.push(newItm);
                 });
                 response.data.data = items;
