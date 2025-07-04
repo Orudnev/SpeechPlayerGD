@@ -60,9 +60,13 @@ export function CrosswordMemorizer() {
         }
     };
     const goNextItem = () => {
-        const minIntervalSecond= 10;
+        const minIntervalSecond= 40;
         const minInterval = minIntervalSecond * 1000;
         const dtnow = Date.now();
+        const flt = items.filter(itm=>{
+            //1. отфильтровать элементы которые не использовались более minInterval
+            return itm.r && dtnow - itm.r.ts > minInterval;
+        });
         const nextItems = items.filter(itm=>{
             //1. отфильтровать элементы которые не использовались более minInterval
             return itm.r && dtnow - itm.r.ts > minInterval;
@@ -133,6 +137,7 @@ export function CrosswordMemorizer() {
             let rptTimes = 5; //Количество повторений при отказе от ответа
             if(currentItem && currentItem.r){
                 currentItem.r.Aef+=rptTimes;
+                currentItem.r.ts = Date.now();
             }            
         }
         if (status === "ShowAnswer") {
@@ -173,10 +178,16 @@ export function CrosswordMemorizer() {
                     {currentItem &&
                         <button className={microphoneBtnClass} onMouseDown={() => {
                             setIsMicrophoneOn(true);
-                            //
                         }} onMouseUp={() => {
                             setIsMicrophoneOn(false);
-                        }}>
+                        }}
+                        onTouchStart={() => {
+                            setIsMicrophoneOn(true);
+                        }}
+                        onTouchEnd={()=>{
+                            setIsMicrophoneOn(false);
+                        }}
+                        >
                             <div className="img-btn img-microphoneOn" />
                         </button>
                     }

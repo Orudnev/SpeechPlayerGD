@@ -85,7 +85,7 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
           if (ch.char.toLocaleLowerCase() === inpChar) {
             ch.revealed = true;
             setCurrentPosition({ wordIndex: wrdIndex, charIndex: charIndex+1 });
-            if(calcHasHiddenChars()){
+            if(!calcHasHiddenChars()){
               props.onComplete();
             }
           }
