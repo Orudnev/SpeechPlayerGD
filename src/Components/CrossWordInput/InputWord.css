@@ -27,6 +27,7 @@
 .input-word__word {
   display: flex;
   gap: 3px;
+  margin-right: 8px;
 }
 
 .input-word__cell {
