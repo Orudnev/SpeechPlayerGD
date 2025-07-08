@@ -183,7 +183,6 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
               const isActive = wordIndex === currentPosition.wordIndex &&
                 charIndex === currentPosition.charIndex &&
                 hasHiddenChars;
-
               return (
                 <div
                   key={`cell-${wordIndex}-${charIndex}`}
@@ -192,6 +191,7 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
                     ${isActive ? 'input-word__cell--active' : ''}
                     ${char.revealed || showAnswer ? 'input-word__cell--revealed' : ''}
                   `}
+                  style={{width: '6vw', height: '6vw'}}
                 >
                   {(char.revealed || showAnswer) && (
                     <span className="input-word__char">
