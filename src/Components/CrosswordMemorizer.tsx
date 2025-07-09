@@ -14,6 +14,8 @@ function UpdateItemRating(currItem: IItem, addSuccessCount: boolean): void {
     if (addSuccessCount) {
         currItem.r.Asf++;
         if(currItem.r.Aef > 0) currItem.r.Aef--;
+        if(currItem.r.lcnt<currItem.r.Asf) currItem.r.lcnt = currItem.r.Asf;
+        SendItemRatingsToServer([currItem]);
         return;
     }
     currItem.r.lcnt++;
@@ -67,7 +69,7 @@ export function CrosswordMemorizer() {
             //1. отфильтровать элементы которые не использовались более minInterval
             return itm.r && dtnow - itm.r.ts > minInterval;
         });
-        const nextItems = items.filter(itm=>{
+        let nextItems = items.filter(itm=>{
             //1. отфильтровать элементы которые не использовались более minInterval
             return itm.r && dtnow - itm.r.ts > minInterval;
         })
@@ -89,15 +91,22 @@ export function CrosswordMemorizer() {
             }
             return 0;
         });
-
+        if(nextItems.length === 0) {
+            //Подходящего элемента нет. Извлекаем элемент с наимболее старым таймштампом
+            nextItems = items.sort((a,b)=>{
+                if(a.r && b.r){
+                    let result = a.r.ts - b.r.ts;
+                    return result;
+                }
+                return 0;
+            })
+        }
         let currItem = nextItems[0];
         if (inpWordRef.current && currItem) {
             inpWordRef.current.loadNewItem(currItem.q.text, currItem.a.text);
             setStatus("Started");
         }
-        if (currentItem) {
-            UpdateItemRating(currentItem, false);
-        }
+            UpdateItemRating(currItem, false);
         setCurrentItem(currItem);
         setStatus("LoadNewItem");
     }
