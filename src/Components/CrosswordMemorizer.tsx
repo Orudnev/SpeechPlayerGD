@@ -163,6 +163,7 @@ export function CrosswordMemorizer() {
         setIsSettingsMode(false);
         if (dataSheetChanged) {
             shName = AppSessionData.prop('PlCfg_DataSheetName');
+            setCurrentItem(undefined);
             reloadData();            
         }
     };

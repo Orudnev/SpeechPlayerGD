@@ -67,6 +67,7 @@ export function Settings(props: any) {
            setSheetNames(result.data);
         });
     },[])
+    const selItem = AppSessionData.prop('PlCfg_DataSheetName');
     return (
         <div className='ph-mem'>
             <button className="toolbar-button" onClick={() => { props.onExit(dataSheetChanged) }}>
@@ -75,10 +76,10 @@ export function Settings(props: any) {
             <SettingsBoolItem labelText='Say answer' propId={'PlCfg_SayAnswer'} />
             <SettingsBoolItem labelText='Listen answer' propId={'PlCfg_ListenAnswer'} />
             <SettingsDropDownItem labelText='Default page' propId='PlCfg_DefaultPageTitle' items={filterUniqueByProperty(AppPages, 'title')} selectedItem={''} onItemSelected={() => { }} displayMember='title' />
-            <SettingsDropDownItem labelText='Data sheet' propId='PlCfg_DataSheetName' items={sheetNames} selectedItem={AppSessionData.prop('PlCfg_DataSheetName')} 
-            onItemSelected={(selItem: any) => { 
-                setDataSheetChanged(true);
-            }} displayMember='' />
+            <SettingsDropDownItem labelText='Data sheet' propId='PlCfg_DataSheetName' items={sheetNames} selectedItem={selItem} 
+                onItemSelected={(selItem: any) => { 
+                    setDataSheetChanged(true);
+                }} displayMember='' />
         </div>
     );
 }

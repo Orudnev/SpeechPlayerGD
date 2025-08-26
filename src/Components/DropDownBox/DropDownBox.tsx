@@ -17,6 +17,9 @@ const DropDownBox: React.FC<IDropDownProps> = ({ items, selectedItem, displayMem
     setSelItem(selectedValue);
     onItemSelected(selectedValue);
   };
+  if(selItem != selectedItem) {
+    setSelItem(selectedItem);
+  }
   const getDisplayValue = (itm:any) => {
     let itmIndex:any = items.indexOf(itm);
     if(!displayMember){
@@ -25,9 +28,10 @@ const DropDownBox: React.FC<IDropDownProps> = ({ items, selectedItem, displayMem
     return items[itmIndex][displayMember];
   };
   let clName = clsName + ' ddown_container';
+  const compValue = items.indexOf(selItem);
   return (
     <select className={clName} 
-      value={items.indexOf(selItem)}
+      value={compValue}
       onChange={handleChange}
     >
       {items.map((item, index) => (
