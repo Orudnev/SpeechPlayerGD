@@ -111,19 +111,23 @@ export function CrosswordMemorizer() {
         setStatus("LoadNewItem");
     }
 
-    const shName = AppSessionData.prop('PlCfg_DataSheetName');
+    let shName = AppSessionData.prop('PlCfg_DataSheetName');
     if (!shName) {
         setTimeout(() => {
             setIsSettingsMode(true);
         }, 0);
     }
-    useEffect(() => {
+    const reloadData = () => {
+        setStatus('Loading...');
         waw.GetAllRows(shName, (resp: waw.IApiResponse) => {
             if (resp.data.status == "ok") {
                 setItems(resp.data.data);
                 setStatus('Stopped');
             }
-        });
+        });        
+    };
+    useEffect(() => {
+        reloadData();
     }, []);
 
     const sayAnswer = (onComplete?: () => void) => {
@@ -155,13 +159,20 @@ export function CrosswordMemorizer() {
             goNextItem();
         }
     };
+    const handleApplySettings = (dataSheetChanged: boolean) => {
+        setIsSettingsMode(false);
+        if (dataSheetChanged) {
+            shName = AppSessionData.prop('PlCfg_DataSheetName');
+            reloadData();            
+        }
+    };
 
     const handleBtnSettingsClick = () => setIsSettingsMode(true);
     const handleBtnSoundClick = () => {
         sayAnswer();
     };
     if (isSettingsMode) {
-        return (<Settings onExit={() => setIsSettingsMode(false)} />);
+        return (<Settings onExit={handleApplySettings} />);
     }
     const soundBtnClass = isSpeaking ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';
     const microphoneBtnClass = isMicrophoneOn ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';

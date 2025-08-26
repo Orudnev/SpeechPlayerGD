@@ -56,11 +56,12 @@ export function SettingsDropDownItem(props: ISettingsDropDownItemProps) {
 }
 
 export interface ISettingsProps {
-    onExit: () => void;
+    onExit: (dataSheetChanged: boolean) => void;
 }
 
 export function Settings(props: any) {
     const [sheetNames,setSheetNames] = useState([]);
+    const [dataSheetChanged,setDataSheetChanged] = useState(false);
     useEffect(() => {
         waw.GetSheetNames((result) => {
            setSheetNames(result.data);
@@ -68,7 +69,7 @@ export function Settings(props: any) {
     },[])
     return (
         <div className='ph-mem'>
-            <button className="toolbar-button" onClick={() => { props.onExit() }}>
+            <button className="toolbar-button" onClick={() => { props.onExit(dataSheetChanged) }}>
                 <div className="img-btn img-exit" />
             </button>
             <SettingsBoolItem labelText='Say answer' propId={'PlCfg_SayAnswer'} />
@@ -76,6 +77,7 @@ export function Settings(props: any) {
             <SettingsDropDownItem labelText='Default page' propId='PlCfg_DefaultPageTitle' items={filterUniqueByProperty(AppPages, 'title')} selectedItem={''} onItemSelected={() => { }} displayMember='title' />
             <SettingsDropDownItem labelText='Data sheet' propId='PlCfg_DataSheetName' items={sheetNames} selectedItem={AppSessionData.prop('PlCfg_DataSheetName')} 
             onItemSelected={(selItem: any) => { 
+                setDataSheetChanged(true);
             }} displayMember='' />
         </div>
     );

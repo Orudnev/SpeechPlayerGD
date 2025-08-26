@@ -33,9 +33,8 @@ export interface IAppPage {
 }
 
 export const AppPages: IAppPage[] = [
-  { path: "/", title: "Voice page", getElement: () => { return <CrosswordMemorizer /> }},
-  { path: "/SpeechPlayerGD", title: "Voice page", getElement: () => { return <CrosswordMemorizer /> } },
-  { path: "/CrossWord", title: "Crossword page", getElement: () => { return <CrosswordMemorizer /> } }
+  { path: "/", title: "Crossword Page", getElement: () => { return <CrosswordMemorizer /> }},
+  { path: "/SpeechPlayerGD", title: "Crossword Page", getElement: () => { return <CrosswordMemorizer /> }}
 ];
 export function filterUniqueByProperty(arr:any[], property:string) {
   return arr.filter((obj, index, self) =>
