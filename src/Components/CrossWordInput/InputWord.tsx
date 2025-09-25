@@ -172,7 +172,12 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
 
   let msg = hasHiddenChars ? message : 'Все символы раскрыты!';
   // if (!props.answerString) msg = "";
-  
+  let cellSize = 6;
+  let cellFondSizeClass = "input-word__cellFsize";
+  if (words.length>5) {
+    cellSize = 3;
+    cellFondSizeClass = "input-word__cellFsizeSmall";
+  }
   return (
     <div ref={containerRef} className="input-word" style={{ cursor: 'pointer' }} onClick={focusInput}>
       <h1 className="input-word__question">{questionStr}</h1>
@@ -187,11 +192,11 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
                 <div
                   key={`cell-${wordIndex}-${charIndex}`}
                   className={`
-                    input-word__cell
+                    input-word__cell ${cellFondSizeClass}                    
                     ${isActive ? 'input-word__cell--active' : ''}
                     ${char.revealed || showAnswer ? 'input-word__cell--revealed' : ''}
                   `}
-                  style={{width: '6vw', height: '6vw'}}
+                  style={{width: cellSize+'vw', height: cellSize+'vw'}}
                 >
                   {(char.revealed || showAnswer) && (
                     <span className="input-word__char">

@@ -35,11 +35,17 @@
   align-items: center;
   justify-content: center;
   border: 2px solid #333;
-  font-size: 4vw;
   font-weight: bold;
   background: white;
   border-radius: 4px;
   user-select: none;
+}
+
+.input-word__cellFsize {
+  font-size: 4vw;  
+}
+.input-word__cellFsizeSmall {
+  font-size: 2.5vw;  
 }
 
 .input-word__cell--active {
