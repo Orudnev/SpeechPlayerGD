@@ -71,7 +71,7 @@ export function Settings(props: any) {
     return (
         <div className='ph-mem'>
             <button className="toolbar-button" onClick={() => { props.onExit(dataSheetChanged) }}>
-                <div className="img-btn img-exit" />
+                <div className="img-btn img-exit-tomain" />
             </button>
             <SettingsBoolItem labelText='Say answer' propId={'PlCfg_SayAnswer'} />
             <SettingsBoolItem labelText='Listen answer' propId={'PlCfg_ListenAnswer'} />

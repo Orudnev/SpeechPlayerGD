@@ -1,0 +1,16 @@
+<svg stroke-width="0.501" stroke-linejoin="bevel" fill-rule="evenodd" xmlns="http://www.w3.org/2000/svg" version="1.1" overflow="visible" width="36pt" height="36pt" viewBox="0 0 36 36">
+  <g id="Document" fill="none" stroke="black" font-family="Times New Roman" font-size="16" transform="scale(1 -1)">
+    <g id="Spread" transform="translate(0 -36)">
+      <g id="Layer 1">
+        <path d="M 14.793,3.807 C 6.923,5.61 1.999,13.463 3.802,21.334 C 5.605,29.204 13.458,34.128 21.329,32.325 C 29.199,30.522 34.123,22.669 32.32,14.798 C 30.517,6.928 22.664,2.004 14.793,3.807 Z" stroke="#333333" stroke-width="0.462" stroke-linejoin="miter" marker-start="none" marker-end="none" stroke-miterlimit="79.8403193612775"/>
+        <g id="Group" stroke-linejoin="miter" stroke="none" stroke-width="0.052" fill="#333333" stroke-miterlimit="79.8403193612775">
+          <path d="M 26.071 15.765 L 24.275 15.695 L 24.275 10.415 L 18.467 10.381 C 17.636 9.891 17.412 9.148 18.467 8.686 L 25.473 8.621 C 25.882 8.745 26.089 8.993 26.035 9.395 L 26.071 15.765 Z" marker-start="none" marker-end="none"/>
+          <path d="M 24.241,25.549 L 18.504,25.585 C 17.624,25.867 17.483,26.781 18.504,27.274 L 25.402,27.239 C 25.898,27.158 26.095,26.927 26.035,26.57 L 26.035,20.446 C 25.824,19.706 24.734,19.601 24.346,20.446 L 24.241,25.549 Z" marker-start="none" marker-end="none"/>
+          <path d="M 16.92,29.386 L 8.859,26.992 L 8.93,9.077 L 16.884,6.614 L 16.92,29.386 Z" marker-start="none" marker-end="none"/>
+          <path d="M 30.574 16.564 C 31.875 16.882 32.298 18.642 30.574 19.169 L 23.217 19.205 L 23.112 21.632 L 19.486 17.902 L 23.182 14.241 L 23.252 16.494 L 24.976 16.494 L 26.772 16.564 L 30.574 16.564 Z" marker-start="none" marker-end="none" style="stroke-width: 0.052; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(-1, 0, 0, -1, 0, 0.000001)"/>
+        </g>
+      </g>
+      <g id="Layer_1"/>
+    </g>
+  </g>
+</svg>
