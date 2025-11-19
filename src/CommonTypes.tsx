@@ -19,7 +19,8 @@ export interface IResult {
   ts: number;      //last access timestamp     
 }
 
-export interface IItem {
+export interface IItem {  
+  SheetName: string;
   uid:string;
   q: ISubItem;
   a: ISubItem;

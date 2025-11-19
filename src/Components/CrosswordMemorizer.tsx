@@ -15,31 +15,28 @@ function UpdateItemRating(currItem: IItem, addSuccessCount: boolean): void {
         currItem.r.Asf++;
         if(currItem.r.Aef > 0) currItem.r.Aef--;
         if(currItem.r.lcnt<currItem.r.Asf) currItem.r.lcnt = currItem.r.Asf;
-        SendItemRatingsToServer([currItem]);
+        SendItemRatingsToServer(currItem);
         return;
     }
     currItem.r.lcnt++;
     currItem.r.ts = Date.now();
-    SendItemRatingsToServer([currItem]);
+    SendItemRatingsToServer(currItem);
 }
 
-function SendItemRatingsToServer(items: IItem[]) {
-    let rows = items.map(itm => {
-        let row = {
-            Uid: itm.uid,
-            En: itm.a.text,
-            Ru: itm.q.text,
-            Lcnt: itm.r?.lcnt,
-            Asf: itm.r?.Asf,
-            Asr: itm.r?.Asr,
-            Aer: itm.r?.Aer,
-            Aef: itm.r?.Aef,
-            Ts: itm.r?.ts
-        }
-        return row;
-    });
+function SendItemRatingsToServer(itm: IItem) {
+    let row = {
+        Uid: itm.uid,
+        En: itm.a.text,
+        Ru: itm.q.text,
+        Lcnt: itm.r?.lcnt,
+        Asf: itm.r?.Asf,
+        Asr: itm.r?.Asr,
+        Aer: itm.r?.Aer,
+        Aef: itm.r?.Aef,
+        Ts: itm.r?.ts
+    };
     const shName = AppSessionData.prop('PlCfg_DataSheetName');
-    waw.UpdateRows(shName, rows);
+    waw.UpdateRows(itm.SheetName, [row]);
 }
 
 export function CrosswordMemorizer() {

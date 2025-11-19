@@ -2,7 +2,7 @@ import axios from "axios";
 import { IItem } from "./CommonTypes";
 
 
-const webApiBaseUrl = 'https://script.google.com/macros/s/AKfycbzGix0nJhP4JaWQgZR6uxWz7i20NikpW1e3lZZHezyeoMEI6IZmWpvoowO5oVJL8uiu_w/exec';
+const webApiBaseUrl = 'https://script.google.com/macros/s/AKfycbzXr84gcGgTyaVwdI9IZTvZMPOlHp8LDX3ZuLBNKs18c1CnwgJj_oY-dm8jOPxCvBtM4A/exec';
 export interface IApiResponse{
     status:string;
     data:any;
@@ -34,6 +34,7 @@ export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void){
                 let items:IItem[] = [];
                 itemsSrc.forEach((itm) => {
                     let newItm:IItem = {
+                            SheetName:itm.SheetName,
                             uid:itm.Uid,
                             q:{lang:'ru-RU',text:itm.Ru},
                             a:{lang:'en-US',text:itm.En},
