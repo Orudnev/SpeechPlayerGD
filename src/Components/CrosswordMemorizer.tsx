@@ -59,7 +59,7 @@ export function CrosswordMemorizer() {
         }
     };
     const goNextItem = () => {
-        const minIntervalSecond= 60;
+        const minIntervalSecond= 600;
         const minInterval = minIntervalSecond * 1000;
         const dtnow = Date.now();
         if(currentItem && currentItem.r){
@@ -71,18 +71,19 @@ export function CrosswordMemorizer() {
         })
         .sort((a,b)=>{
             if(a.r && b.r){
-                //2. Сортировать по Aef (отказ от ответа, большее количество повторений в начале)
-                let result = b.r.Aef - a.r.Aef; 
-                if(result){
+                //2. если один из элементов не использовался, сотритуем по количеству просмотров (защита от деления на 0)
+                if(a.r.lcnt === 0 || b.r.lcnt === 0) {
+                    return a.r.lcnt - b.r.lcnt;
+                }
+
+                //3. Сортировать по критерию ошибки/количество просмотров
+                let result = b.r.Aef/b.r.lcnt - a.r.Aef/a.r.lcnt; 
+                if(result != 0){
                     return result;
                 } 
-                //3. Сортировать по Lcnt (меньшие значения в начале)
-                result = a.r.lcnt - b.r.lcnt;
-                if(result !==0) {
-                    return result;
-                }
-                //3. Сортировать по Asf (количество правильных ответов, меньшие значения в начале)
-                result = a.r.Asf - b.r.Asf;
+                
+                //4. Сортировать по критерию успешные ответы/количество просмотров 
+                result = a.r.Asf/a.r.lcnt - b.r.Asf/b.r.lcnt;
                 return result;
             }
             return 0;
@@ -98,6 +99,12 @@ export function CrosswordMemorizer() {
             })
         }
         let newCurrItem = nextItems[0];
+        if(newCurrItem.uid == currentItem?.uid){
+            //алгоритмом выбран тот же элемент, что и в прошлый раз
+            if(nextItems.length > 1){
+                newCurrItem = nextItems[1];
+            }
+        }
         if (inpWordRef.current && newCurrItem) {
             inpWordRef.current.loadNewItem(newCurrItem.q.text, newCurrItem.a.text);
             setStatus("Started");
