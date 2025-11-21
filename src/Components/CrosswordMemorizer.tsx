@@ -35,7 +35,6 @@ function SendItemRatingsToServer(itm: IItem) {
         Aef: itm.r?.Aef,
         Ts: itm.r?.ts
     };
-    const shName = AppSessionData.prop('PlCfg_DataSheetName');
     waw.UpdateRows(itm.SheetName, [row]);
 }
 
@@ -117,17 +116,14 @@ export function CrosswordMemorizer() {
         setStatus("LoadNewItem");
     }
 
-    let shName = AppSessionData.prop('PlCfg_DataSheetName');
-    if (!shName) {
-        setTimeout(() => {
-            setIsSettingsMode(true);
-        }, 0);
-    }
     const reloadData = () => {
         setStatus('Loading...');
-        waw.GetAllRows(shName, (resp: waw.IApiResponse) => {
+        waw.GetAllRows("All", (resp: waw.IApiResponse) => {
             if (resp.data.status == "ok") {
-                setItems(resp.data.data);
+                let allRows = resp.data.data;
+                let selectedSheetList = AppSessionData.prop('PlCfg_DataSheetNames');
+                let result = allRows.filter((row:any)=>selectedSheetList.find((shName:string)=>shName==row.SheetName));
+                setItems(result);
                 setStatus('Stopped');
             }
         });        
@@ -165,10 +161,9 @@ export function CrosswordMemorizer() {
             goNextItem();
         }
     };
-    const handleApplySettings = (dataSheetChanged: boolean) => {
+    const handleApplySettings = (selectedSheetListChanged: boolean) => {
         setIsSettingsMode(false);
-        if (dataSheetChanged) {
-            shName = AppSessionData.prop('PlCfg_DataSheetName');
+        if (selectedSheetListChanged) {
             setCurrentItem(undefined);
             reloadData();            
         }
@@ -228,6 +223,7 @@ export function CrosswordMemorizer() {
                 listening={isMicrophoneOn}
                 lang="en-US"
             />
+            {status !== 'Loading...' && currentItem && <div>{currentItem.SheetName}</div>}
             <InputWord ref={inpWordRef}
                 onComplete={() => {
                     if (currentItem) {

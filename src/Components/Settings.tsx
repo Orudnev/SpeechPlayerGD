@@ -4,6 +4,7 @@ import { AppSessionData, TAppSesstionDataProps } from './AppData';
 import Switch from './Switch/Switch';
 import DropDownBox, { IDropDownProps } from './DropDownBox/DropDownBox';
 import { AppPages, filterUniqueByProperty } from '../CommonTypes';
+import MultipleSelectChip from './MultipleSelectChip';
 import * as waw from '../WebApiWrapper';
 
 export interface ISettingsBoolItemProps {
@@ -55,31 +56,64 @@ export function SettingsDropDownItem(props: ISettingsDropDownItemProps) {
     );
 }
 
+
+export interface ISettingsMultipleSelectChip {
+    labelText: string;
+    propId: TAppSesstionDataProps;
+    options:string[];
+    onSelectionChanged:()=>void;
+}
+export function SettingsMultipleSelectChip(props: ISettingsMultipleSelectChip) {
+    let selectedValues:any = AppSessionData.prop(props.propId);
+    return (
+        <div className="settings-bool-item">
+            <div>{props.labelText}</div>
+            {props.options.length===0 && <div>Loading...</div>}
+            {props.options.length>0 &&
+                <MultipleSelectChip options={props.options} selectedValues={selectedValues}
+                    onSelectionChanged={(selItems: string[]) => {
+                        AppSessionData.prop(props.propId,selItems);
+                        props.onSelectionChanged();
+                    }}
+                 />
+            }
+        </div>
+    );
+}
+
 export interface ISettingsProps {
-    onExit: (dataSheetChanged: boolean) => void;
+    onExit: (selectedSheetListChanged: boolean) => void;
 }
 
 export function Settings(props: any) {
     const [sheetNames,setSheetNames] = useState([]);
-    const [dataSheetChanged,setDataSheetChanged] = useState(false);
+    const [selectedSheetListChanged,setSelectedSheetListChanged] = useState(false);
     useEffect(() => {
-        waw.GetSheetNames((result) => {
-           setSheetNames(result.data);
-        });
+        let selectedSheetList = AppSessionData.cachedProp('CP_SelectedSheetNames');
+        if(!selectedSheetList){
+            waw.GetSheetNames((result) => {
+                setSheetNames(result.data);
+                AppSessionData.cachedProp('CP_SelectedSheetNames',result.data);
+            });
+        } else {
+            setSheetNames(selectedSheetList);
+        }
+
     },[])
-    const selItem = AppSessionData.prop('PlCfg_DataSheetName');
     return (
         <div className='ph-mem'>
-            <button className="toolbar-button" onClick={() => { props.onExit(dataSheetChanged) }}>
+            <button className="toolbar-button" onClick={() => { props.onExit(selectedSheetListChanged) }}>
                 <div className="img-btn img-exit-tomain" />
             </button>
             <SettingsBoolItem labelText='Say answer' propId={'PlCfg_SayAnswer'} />
             <SettingsBoolItem labelText='Listen answer' propId={'PlCfg_ListenAnswer'} />
             <SettingsDropDownItem labelText='Default page' propId='PlCfg_DefaultPageTitle' items={filterUniqueByProperty(AppPages, 'title')} selectedItem={''} onItemSelected={() => { }} displayMember='title' />
-            <SettingsDropDownItem labelText='Data sheet' propId='PlCfg_DataSheetName' items={sheetNames} selectedItem={selItem} 
-                onItemSelected={(selItem: any) => { 
-                    setDataSheetChanged(true);
-                }} displayMember='' />
+            <SettingsMultipleSelectChip 
+                propId='PlCfg_DataSheetNames' 
+                labelText='Selected data sheets' 
+                options={sheetNames} 
+                onSelectionChanged={()=>{setSelectedSheetListChanged(true)} } 
+            />
         </div>
     );
 }

@@ -49,21 +49,34 @@ export interface IAppSession{
     PlCfg_SayAnswer:boolean;
     PlCfg_ListenAnswer:boolean;
     PlCfg_DefaultPageTitle:string;
-    PlCfg_DataSheetName:string;
+    PlCfg_DataSheetNames:string[];
 }
+
 
 const AppSessionDataDefaultValues:IAppSession = {
     PlCfg_SayAnswer:false,
     PlCfg_ListenAnswer:true,
     PlCfg_DefaultPageTitle:"SpeechPlayerGD",
-    PlCfg_DataSheetName:""
+    PlCfg_DataSheetNames:["Verbs"]
 }
+
+const CashedProps = {
+    CP_SelectedSheetNames:undefined,
+}
+
 
 export type TAppSesstionDataProps = keyof typeof AppSessionDataDefaultValues;
 
 class AppSessionDataClass extends AppSettingsBase {
     lstorageKey="AppSessionData";
     initPropsObj = AppSessionDataDefaultValues;
+    cachedProp(propName:keyof typeof CashedProps,value:any=undefined){
+        if(value !== undefined){
+            CashedProps[propName] = value;
+        } else {
+            return CashedProps[propName]; 
+        }         
+    }
     prop(propName:TAppSesstionDataProps,value:any=undefined){
         if(value === undefined){
             return super.prop(propName);

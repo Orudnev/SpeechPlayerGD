@@ -2,7 +2,7 @@ import axios from "axios";
 import { IItem } from "./CommonTypes";
 
 
-const webApiBaseUrl = 'https://script.google.com/macros/s/AKfycbzXr84gcGgTyaVwdI9IZTvZMPOlHp8LDX3ZuLBNKs18c1CnwgJj_oY-dm8jOPxCvBtM4A/exec';
+const webApiBaseUrl = 'https://script.google.com/macros/s/AKfycbyCQw2WUSkQGmnRl4n-yB8V92xCSS4pQ8m67gaRWetXKEgEYPa0OEqDuv8Xj2SCGuAUwQ/exec';
 export interface IApiResponse{
     status:string;
     data:any;
