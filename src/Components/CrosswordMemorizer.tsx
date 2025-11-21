@@ -98,6 +98,14 @@ export function CrosswordMemorizer() {
             })
         }
         let newCurrItem = nextItems[0];
+        if(newCurrItem.SheetName === currentItem?.SheetName) {
+            //тот же Spreadsheet что и в прошлый раз
+            //попробуем найти элемент из другого Spreadsheet  
+            let newCurrItmVariant = nextItems.find(itm=>itm.SheetName !== currentItem?.SheetName);
+            if(newCurrItmVariant){
+                newCurrItem = newCurrItmVariant;
+            }
+        }
         if(newCurrItem.uid == currentItem?.uid){
             //алгоритмом выбран тот же элемент, что и в прошлый раз
             if(nextItems.length > 1){
