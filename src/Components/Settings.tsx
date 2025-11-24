@@ -105,6 +105,7 @@ export function Settings(props: any) {
             <button className="toolbar-button" onClick={() => { props.onExit(selectedSheetListChanged) }}>
                 <div className="img-btn img-exit-tomain" />
             </button>
+            <SettingsBoolItem labelText='Say question' propId={'PlCfg_SayQuestion'} />
             <SettingsBoolItem labelText='Say answer' propId={'PlCfg_SayAnswer'} />
             <SettingsBoolItem labelText='Listen answer' propId={'PlCfg_ListenAnswer'} />
             <SettingsDropDownItem labelText='Default page' propId='PlCfg_DefaultPageTitle' items={filterUniqueByProperty(AppPages, 'title')} selectedItem={''} onItemSelected={() => { }} displayMember='title' />

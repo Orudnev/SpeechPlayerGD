@@ -139,6 +139,7 @@ export function CrosswordMemorizer() {
             UpdateItemRating(currentItem, false);
         }
         setCurrentItem(newCurrItem);
+        sayQuestion(newCurrItem);
         setStatus("LoadNewItem");
     }
 
@@ -157,7 +158,18 @@ export function CrosswordMemorizer() {
     useEffect(() => {
         reloadData();
     }, []);
+    const currLang = AppSessionData.prop('PlCfg_ReverseOrder') ? "ru-RU":"en-US";
 
+    const sayQuestion = (item:IItem)=>{
+        let sbItem: ISubItem = { text: item.q.text, lang: item.q.lang };
+        if(AppSessionData.prop('PlCfg_ReverseOrder')) {
+            sbItem = { text: item.a.text, lang: item.a.lang };
+        }
+        setIsSpeaking(true);
+        SayText.addMessage(sbItem, () => {
+            setIsSpeaking(false);
+        });
+    };
     const sayAnswer = (onComplete?: () => void) => {
         if (currentItem) {
             let sbItem: ISubItem = { text: currentItem.a.text, lang: currentItem.a.lang };
@@ -207,7 +219,6 @@ export function CrosswordMemorizer() {
     }
     const soundBtnClass = isSpeaking ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';
     const microphoneBtnClass = isMicrophoneOn ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';
-    const currLang = AppSessionData.prop('PlCfg_ReverseOrder') ? "ru-RU":"en-US";
     return (
         <div className='ph-mem'>
             {status == 'Loading...' && <div>loading...</div>}
