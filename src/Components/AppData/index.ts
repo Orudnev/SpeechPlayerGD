@@ -48,6 +48,7 @@ abstract class AppSettingsBase {
 export interface IAppSession{
     PlCfg_SayAnswer:boolean;
     PlCfg_ListenAnswer:boolean;
+    PlCfg_ReverseOrder:boolean;
     PlCfg_DefaultPageTitle:string;
     PlCfg_DataSheetNames:string[];
 }
@@ -57,6 +58,7 @@ const AppSessionDataDefaultValues:IAppSession = {
     PlCfg_SayAnswer:false,
     PlCfg_ListenAnswer:true,
     PlCfg_DefaultPageTitle:"SpeechPlayerGD",
+    PlCfg_ReverseOrder:false,
     PlCfg_DataSheetNames:["Verbs"]
 }
 

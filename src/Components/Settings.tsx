@@ -108,6 +108,7 @@ export function Settings(props: any) {
             <SettingsBoolItem labelText='Say answer' propId={'PlCfg_SayAnswer'} />
             <SettingsBoolItem labelText='Listen answer' propId={'PlCfg_ListenAnswer'} />
             <SettingsDropDownItem labelText='Default page' propId='PlCfg_DefaultPageTitle' items={filterUniqueByProperty(AppPages, 'title')} selectedItem={''} onItemSelected={() => { }} displayMember='title' />
+            <SettingsBoolItem labelText='Reverse (question/answer)' propId={'PlCfg_ReverseOrder'} />
             <SettingsMultipleSelectChip 
                 propId='PlCfg_DataSheetNames' 
                 labelText='Selected data sheets' 

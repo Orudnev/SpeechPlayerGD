@@ -6,15 +6,22 @@ import InputWord, { InputWordsMethods } from './CrossWordInput/InputWord';
 import { SayText } from './SayText';
 import { Settings } from './Settings';
 import { SpeechRecognizer } from './SR/SpeechRecognizer';
+import App from '../App';
 
 function UpdateItemRating(currItem: IItem, addSuccessCount: boolean): void {
     if (!currItem.r) {
         currItem.r = { Asf: 0, Aw: 0, Aef: 0, Aer: 0, Asr: 0, lcnt: 0, ts: 0 };
     }
     if (addSuccessCount) {
-        currItem.r.Asf++;
-        if(currItem.r.Aef > 0) currItem.r.Aef--;
-        if(currItem.r.lcnt<currItem.r.Asf) currItem.r.lcnt = currItem.r.Asf;
+        if(AppSessionData.prop('PlCfg_ReverseOrder')){
+            currItem.r.Asr++;
+            if(currItem.r.Aer > 0) currItem.r.Aer--;
+            if(currItem.r.lcnt<currItem.r.Asr) currItem.r.lcnt = currItem.r.Asr;
+        } else {
+            currItem.r.Asf++;
+            if(currItem.r.Aef > 0) currItem.r.Aef--;
+            if(currItem.r.lcnt<currItem.r.Asf) currItem.r.lcnt = currItem.r.Asf;
+        }
         SendItemRatingsToServer(currItem);
         return;
     }
@@ -64,6 +71,7 @@ export function CrosswordMemorizer() {
         if(currentItem && currentItem.r){
             currentItem.r.ts = dtnow;
         }
+        let reverseOrder = AppSessionData.prop('PlCfg_ReverseOrder');
         let nextItems = items.filter(itm=>{
             //1. отфильтровать элементы которые не использовались более minInterval
             return itm.r && dtnow - itm.r.ts > minInterval;
@@ -77,18 +85,24 @@ export function CrosswordMemorizer() {
 
                 //3. Сортировать по критерию ошибки/количество просмотров
                 let result = b.r.Aef/b.r.lcnt - a.r.Aef/a.r.lcnt; 
+                if(reverseOrder){
+                    result = b.r.Aer/b.r.lcnt - a.r.Aer/a.r.lcnt; 
+                }
                 if(result != 0){
                     return result;
                 } 
                 
                 //4. Сортировать по критерию успешные ответы/количество просмотров 
                 result = a.r.Asf/a.r.lcnt - b.r.Asf/b.r.lcnt;
+                if(reverseOrder){
+                    result = a.r.Asr/a.r.lcnt - b.r.Asr/b.r.lcnt;
+                }    
                 return result;
             }
             return 0;
         });
         if(nextItems.length === 0) {
-            //Подходящего элемента нет. Извлекаем элемент с наимболее старым таймштампом
+            //Подходящего элемента нет. Извлекаем элемент с наиболее старым таймштампом
             nextItems = items.sort((a,b)=>{
                 if(a.r && b.r){
                     let result = a.r.ts - b.r.ts;
@@ -113,12 +127,16 @@ export function CrosswordMemorizer() {
             }
         }
         if (inpWordRef.current && newCurrItem) {
-            inpWordRef.current.loadNewItem(newCurrItem.q.text, newCurrItem.a.text);
+            if(reverseOrder) {
+                inpWordRef.current.loadNewItem(newCurrItem.a.text,newCurrItem.q.text);    
+            } else {
+                inpWordRef.current.loadNewItem(newCurrItem.q.text, newCurrItem.a.text);
+            }
+
             setStatus("Started");
         }
         if(currentItem){
             UpdateItemRating(currentItem, false);
-
         }
         setCurrentItem(newCurrItem);
         setStatus("LoadNewItem");
@@ -143,6 +161,9 @@ export function CrosswordMemorizer() {
     const sayAnswer = (onComplete?: () => void) => {
         if (currentItem) {
             let sbItem: ISubItem = { text: currentItem.a.text, lang: currentItem.a.lang };
+            if(AppSessionData.prop('PlCfg_ReverseOrder')) {
+                sbItem = { text: currentItem.q.text, lang: currentItem.q.lang };
+            }
             setIsSpeaking(true);
             SayText.addMessage(sbItem, () => {
                 setIsSpeaking(false);
@@ -186,6 +207,7 @@ export function CrosswordMemorizer() {
     }
     const soundBtnClass = isSpeaking ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';
     const microphoneBtnClass = isMicrophoneOn ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';
+    const currLang = AppSessionData.prop('PlCfg_ReverseOrder') ? "ru-RU":"en-US";
     return (
         <div className='ph-mem'>
             {status == 'Loading...' && <div>loading...</div>}
@@ -229,7 +251,7 @@ export function CrosswordMemorizer() {
                     inpWordRef.current?.inputAnswerProgrammatically(words);
                 }}
                 listening={isMicrophoneOn}
-                lang="en-US"
+                lang={currLang}
             />
             {status !== 'Loading...' && currentItem && <div>{currentItem.SheetName}</div>}
             <InputWord ref={inpWordRef}
