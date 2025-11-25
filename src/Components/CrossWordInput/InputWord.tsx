@@ -17,6 +17,7 @@ export interface InputWordsMethods{
   inputAnswerProgrammatically:(inputStr: string[])=>void;
 }
 
+const skippableSymbols = ['.', ',', '?', '!', ' ','-','_'];
 
 const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
 
@@ -59,7 +60,10 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
   useImperativeHandle(ref, () => ({
     loadNewItem(questionStr: string, answerStr: string) {
       const initialWords = answerStr.split(' ').map(word =>
-        word.split('').map(char => ({ char, revealed: false }))
+        word.split('').map(char => { 
+            let isOpened = skippableSymbols.includes(char);
+            return   { char, revealed: isOpened };
+        })
       );
       setCurrentPosition({ wordIndex: 0, charIndex: 0 });
       setQuestionStr(questionStr);
@@ -123,6 +127,7 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
     if (wordIndex >= words.length || charIndex >= words[wordIndex].length) return;
 
     const currentWordChar = words[wordIndex][charIndex];
+
     const pressedKey = char.toLowerCase();
 
     if (currentWordChar.char.toLowerCase() === pressedKey) {

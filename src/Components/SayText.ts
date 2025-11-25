@@ -21,12 +21,13 @@ class SayTextClass {
         // Prefer local (offline) voices for reliability, then by preferred names.
         this.selectedEnVoice = this.enVoices.find(v => v.localService) || 
           this.enVoices.find(v => v.name.includes('Google US English')) || this.enVoices[0];
-        this.selectedRuVoice = this.ruVoices.find(v => v.localService && (
-          v.name === 'Microsoft Pavel - Russian (Russia)' || 
-          v.name === 'Microsoft Irina - Russian (Russia)' || 
-          v.name === 'Russian Russia'
-        )) || this.ruVoices.find(v => v.name === 'Google русский') || this.ruVoices[0];
-  
+        // this.selectedRuVoice = this.ruVoices.find(v => v.localService && (
+        //   v.name === 'Microsoft Pavel - Russian (Russia)' || 
+        //   v.name === 'Microsoft Irina - Russian (Russia)' || 
+        //   v.name === 'Russian Russia'
+        // )) || this.ruVoices.find(v => v.name === 'Google русский') || this.ruVoices[0];
+
+        this.selectedRuVoice = this.ruVoices.find(v => v.name === 'Google русский') || this.ruVoices[0];    
         console.log('Selected EN voice:', this.selectedEnVoice?.name, '(local:', this.selectedEnVoice?.localService, ')');
         console.log('Selected RU voice:', this.selectedRuVoice?.name, '(local:', this.selectedRuVoice?.localService, ')');
   
