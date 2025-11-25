@@ -59,16 +59,21 @@ class AppGlobalClass {
     return "Requesting Server...";
   }
 
-  printAllRows(){
+  printAllRows(onlyText:boolean = false){
     this.getAllRows((rows:any)=>{
       rows.forEach((itm:any)=>{
         let d = new Date(itm.r.ts);
-        let dStr = d.getFullYear().toString()+(d.getMonth()+1).toString() + d.getDate();
+        let dStr = d.getFullYear().toString()+(d.getMonth()+1).toString() + d.getDate().toString() +" "+d.getHours().toString() +":"+d.getMinutes().toString()+":"+ d.getSeconds().toString();
         let out=dStr+" "+itm.SheetName+" "+itm.a.text+"\r";
-        console.log(out);  
+        if(onlyText) {
+          out=itm.a.text+"\r";          
+          console.log(out);          
+        } else {
+          console.log(out);          
+        } 
     });
-    })
-  }
+    });
+  } 
 
 
 }
