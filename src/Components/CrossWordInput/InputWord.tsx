@@ -179,7 +179,8 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
   // if (!props.answerString) msg = "";
   let cellSize = 6;
   let cellFondSizeClass = "input-word__cellFsize";
-  if (words.length>5) {
+  let longestWordInSymbols = words.reduce((maxLength, currentRow) => Math.max(maxLength, currentRow?.length || 0), 0);
+  if (words.length>5 || longestWordInSymbols>14) {
     cellSize = 3;
     cellFondSizeClass = "input-word__cellFsizeSmall";
   }
