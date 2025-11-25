@@ -45,6 +45,34 @@ function SendItemRatingsToServer(itm: IItem) {
     waw.UpdateRows(itm.SheetName, [row]);
 }
 
+
+export function SortRows(a:any,b:any){
+    let reverseOrder = AppSessionData.prop('PlCfg_ReverseOrder');
+    if(a.r && b.r){
+        //2. если один из элементов не использовался, сотритуем по количеству просмотров (защита от деления на 0)
+        if(a.r.lcnt === 0 || b.r.lcnt === 0) {
+            return a.r.lcnt - b.r.lcnt;
+        }
+
+        //3. Сортировать по критерию ошибки/количество просмотров
+        let result = b.r.Aef/b.r.lcnt - a.r.Aef/a.r.lcnt; 
+        if(reverseOrder){
+            result = b.r.Aer/b.r.lcnt - a.r.Aer/a.r.lcnt; 
+        }
+        if(result != 0){
+            return result;
+        } 
+        
+        //4. Сортировать по критерию успешные ответы/количество просмотров 
+        result = a.r.Asf/a.r.lcnt - b.r.Asf/b.r.lcnt;
+        if(reverseOrder){
+            result = a.r.Asr/a.r.lcnt - b.r.Asr/b.r.lcnt;
+        }    
+        return result;
+    }
+    return 0;
+}
+
 export function CrosswordMemorizer() {
     const inpWordRef = useRef<InputWordsMethods>(null);
     const [status, setStatus] = useState<TCrosswordPageStatus>('Loading...');
@@ -76,31 +104,7 @@ export function CrosswordMemorizer() {
             //1. отфильтровать элементы которые не использовались более minInterval
             return itm.r && dtnow - itm.r.ts > minInterval;
         })
-        .sort((a,b)=>{
-            if(a.r && b.r){
-                //2. если один из элементов не использовался, сотритуем по количеству просмотров (защита от деления на 0)
-                if(a.r.lcnt === 0 || b.r.lcnt === 0) {
-                    return a.r.lcnt - b.r.lcnt;
-                }
-
-                //3. Сортировать по критерию ошибки/количество просмотров
-                let result = b.r.Aef/b.r.lcnt - a.r.Aef/a.r.lcnt; 
-                if(reverseOrder){
-                    result = b.r.Aer/b.r.lcnt - a.r.Aer/a.r.lcnt; 
-                }
-                if(result != 0){
-                    return result;
-                } 
-                
-                //4. Сортировать по критерию успешные ответы/количество просмотров 
-                result = a.r.Asf/a.r.lcnt - b.r.Asf/b.r.lcnt;
-                if(reverseOrder){
-                    result = a.r.Asr/a.r.lcnt - b.r.Asr/b.r.lcnt;
-                }    
-                return result;
-            }
-            return 0;
-        });
+        .sort(SortRows);
         if(nextItems.length === 0) {
             //Подходящего элемента нет. Извлекаем элемент с наиболее старым таймштампом
             nextItems = items.sort((a,b)=>{
