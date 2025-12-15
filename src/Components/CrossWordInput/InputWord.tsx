@@ -59,7 +59,7 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     loadNewItem(questionStr: string, answerStr: string) {
-      const initialWords = answerStr.split(' ').map(word =>
+      const initialWords = answerStr.trim().split(' ').map(word =>
         word.split('').map(char => { 
             let isOpened = skippableSymbols.includes(char);
             return   { char, revealed: isOpened };
