@@ -13,7 +13,7 @@ import { AppSessionData  } from './Components/AppData';
 import { store, TAllActions, IAppState } from './Reducers/index';
 import { SayText } from './Components/SayText';
 import { AppPages, ISubItem } from './CommonTypes';
-import { GetAllRows, IApiResponse } from './WebApiWrapper';
+import { GetAllRows, GetPrompt, IApiResponse } from './WebApiWrapper';
 import { SortRows } from './Components/CrosswordMemorizer';
 
 class AppGlobalClass {
@@ -72,10 +72,18 @@ class AppGlobalClass {
           console.log(out);          
         } 
     });
-    });
+    });    
   } 
 
-
+  getPrompt(){
+    GetPrompt()
+    .then((resp:any)=>{
+      let s = resp;
+    })
+    .catch((err:any)=>{
+      let s = err;
+    });
+  }
 }
 
 export const AppGlobal = new AppGlobalClass();

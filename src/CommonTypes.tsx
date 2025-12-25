@@ -9,22 +9,24 @@ export interface ISubItem {
 
 export interface IResult {
   lcnt: number;  // всего попыток
+  Asf: number;     //Кол-во успешных ответов прямых 
+  Asr: number;     //Кол-во успешных ответов обратных
+  Aef: number;     //Кол-во ошибочтых ответов прямых
+  Aer: number;     //Кол-во ошибочных ответов обратных
+  ts: number;      //Unix timestamp - время последнего изменения результата
   // fsa: number;   //forward (question->answer) succeded answers
   // rsa: number;   //reverse (answer->question) succeded answers
-  Asf: number;     //Кол-во успешных ответов голосом прямых
-  Asr: number;     //Кол-во успешных ответов голосом обратных
-  Aef: number;     //Кол-во ошибочтых ответов голосом прямых
-  Aer: number;     //Кол-во ошибочных ответов голосом обратных
   Aw: number;      //Кол-во успешных ответов письменных (прямых)
-  ts: number;      //last access timestamp     
 }
 
 export interface IItem {  
-  SheetName: string;
-  uid:string;
-  q: ISubItem;
-  a: ISubItem;
-  r: IResult | undefined;
+  SheetName: string;  //имя набора слов/фраз
+  uid:string;         //уникальный идентификатор записи
+  q: ISubItem;        //вопрос
+  a: ISubItem;        //ответ
+  // если q.lang == 'ru-RU' то экземпляр Item считается "прямым"
+  // если q.lang == 'en-US' то экземпляр Item считается "обратным"
+  r: IResult | undefined; //рейтинг 
 }
 
 export interface IAppPage {

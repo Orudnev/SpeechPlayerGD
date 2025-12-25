@@ -2,7 +2,7 @@ import axios from "axios";
 import { IItem } from "./CommonTypes";
 
 
-const webApiBaseUrl = 'https://script.google.com/macros/s/AKfycbyCQw2WUSkQGmnRl4n-yB8V92xCSS4pQ8m67gaRWetXKEgEYPa0OEqDuv8Xj2SCGuAUwQ/exec';
+const webApiBaseUrl = 'https://script.google.com/macros/s/AKfycbwHKG2q6wNLlVUGupFSOjEGrN3KpRc4eSoGqjK6YZlxkIcTo5V0hP24MVtvVUqDFpTqxw/exec';
 export interface IApiResponse{
     status:string;
     data:any;
@@ -20,6 +20,7 @@ export function GetSheetNames(handler:(response:IApiResponse)=>void){
         }
     });
 }
+
 export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void){
     axios({
         url:webApiBaseUrl,
@@ -98,4 +99,12 @@ export function storeResult(resultItems:IItem[]){
         let s=1;
     });
     
+}
+
+export function  GetPrompt(){
+    return axios({
+        url:webApiBaseUrl,
+        method:'GET',
+        params:{method:'getPrompt'}
+    });
 }
