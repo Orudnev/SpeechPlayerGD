@@ -76,13 +76,7 @@ class AppGlobalClass {
   } 
 
   getPrompt(){
-    GetPrompt()
-    .then((resp:any)=>{
-      let s = resp;
-    })
-    .catch((err:any)=>{
-      let s = err;
-    });
+    window.dispatchEvent(new CustomEvent("promptbtn:toggle",{detail:true}));
   }
 }
 

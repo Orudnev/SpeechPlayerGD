@@ -6,7 +6,7 @@ import InputWord, { InputWordsMethods } from './CrossWordInput/InputWord';
 import { SayText } from './SayText';
 import { Settings } from './Settings';
 import { SpeechRecognizer } from './SR/SpeechRecognizer';
-import App from '../App';
+import App, { AppGlobal } from '../App';
 
 function UpdateItemRating(currItem: IItem, addSuccessCount: boolean): void {
     if (!currItem.r) {
@@ -269,6 +269,7 @@ export function CrosswordMemorizer() {
                 lang={currLang}
             />
             {status !== 'Loading...' && currentItem && <div>{currentItem.SheetName}</div>}
+            {status !== 'Loading...' && <GetPromptButton />}            
             <InputWord ref={inpWordRef}
                 onComplete={() => {
                     if (currentItem) {
@@ -278,4 +279,43 @@ export function CrosswordMemorizer() {
                 }} />
         </div>
     );
+}
+
+export function GetPromptButton(){
+    const [visible, setVisible] = useState(false);
+    const [caption, setCaption] = useState("Request prompt...");
+    const [isRequested, setIsRequested] = useState(false);
+    const [prompt,setPrompt] = useState({});
+    useEffect(() => {
+        const handler = (e:any) => setVisible(e.detail);
+
+        window.addEventListener("promptbtn:toggle", handler);
+        return () => window.removeEventListener("promptbtn:toggle", handler);
+    }, []);
+
+    if(visible){
+        if(!isRequested){
+            waw.GetPrompt()
+                .then((resp:any)=>{
+                  setPrompt(resp);  
+                  setCaption("Copy to clipboard")
+                })
+                .catch((err:any)=>{
+                  setCaption("Error");
+                });            
+        }
+        return (
+            <button className='get-prompt-button' disabled={caption !== 'Copy to clipboard'} onClick={()=>{
+                try {
+                    navigator.clipboard.writeText((prompt as any).data.data);
+                    setVisible(false);
+                } catch (err) {
+                    setCaption("Не удалось скопировать текст");
+                }                
+            }} >
+                {caption}
+            </button>
+        );
+    }
+    return null;
 }
