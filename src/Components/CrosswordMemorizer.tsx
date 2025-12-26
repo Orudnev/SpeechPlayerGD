@@ -55,18 +55,18 @@ export function SortRows(a:any,b:any){
         }
 
         //3. Сортировать по критерию ошибки/количество просмотров
-        let result = b.r.Aef/b.r.lcnt - a.r.Aef/a.r.lcnt; 
+        let result = b.r.Aef - a.r.Aef; 
         if(reverseOrder){
-            result = b.r.Aer/b.r.lcnt - a.r.Aer/a.r.lcnt; 
+            result = b.r.Aer - a.r.Aer; 
         }
         if(result != 0){
             return result;
         } 
         
         //4. Сортировать по критерию успешные ответы/количество просмотров 
-        result = a.r.Asf/a.r.lcnt - b.r.Asf/b.r.lcnt;
+        result = a.r.Asf - b.r.Asf;
         if(reverseOrder){
-            result = a.r.Asr/a.r.lcnt - b.r.Asr/b.r.lcnt;
+            result = a.r.Asr - b.r.Asr;
         }    
         return result;
     }
@@ -100,6 +100,9 @@ export function CrosswordMemorizer() {
             currentItem.r.ts = dtnow;
         }
         let reverseOrder = AppSessionData.prop('PlCfg_ReverseOrder');
+        let newestItems = items.filter(itm=>{
+            return itm.r && dtnow - itm.r.ts <= minInterval;
+        });
         let nextItems = items.filter(itm=>{
             //1. отфильтровать элементы которые не использовались более minInterval
             return itm.r && dtnow - itm.r.ts > minInterval;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import './InputWord.css';
+import keypressSound from './keypress.mp3';
 
 interface WordChar {
   char: string;
@@ -11,15 +12,16 @@ export interface InputWordProps {
   onComplete: () => void;
 }
 
-export interface InputWordsMethods{
-  loadNewItem:(questionStr:string, answerStr: string)=>void;
-  showAnswer:(show:boolean)=>void;
-  inputAnswerProgrammatically:(inputStr: string[])=>void;
+export interface InputWordsMethods {
+  loadNewItem: (questionStr: string, answerStr: string) => void;
+  showAnswer: (show: boolean) => void;
+  inputAnswerProgrammatically: (inputStr: string[]) => void;
 }
 
-const skippableSymbols = ['.', ',', '?', '!', ' ','-','_'];
+const skippableSymbols = ['.', ',', '?', '!', ' ', '-', '_'];
 
-const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
+
+const InputWord = forwardRef<InputWordsMethods, InputWordProps>((props, ref) => {
 
   const [words, setWords] = useState<WordChar[][]>([[]]);
   const [currentPosition, setCurrentPosition] = useState({
@@ -33,8 +35,15 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const calcHasHiddenChars = () => words?words.some(word => word.some(char => !char.revealed && !showAnswer)) || words.length == 0 || words[0].length === 0:false;
+  const calcHasHiddenChars = () => words ? words.some(word => word.some(char => !char.revealed && !showAnswer)) || words.length == 0 || words[0].length === 0 : false;
   const hasHiddenChars = calcHasHiddenChars();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playKeyPressSound = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(console.error);
+    }
+  };
 
   const focusInput = () => {
     if (inputRef.current) {
@@ -60,9 +69,9 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
   useImperativeHandle(ref, () => ({
     loadNewItem(questionStr: string, answerStr: string) {
       const initialWords = answerStr.trim().split(' ').map(word =>
-        word.split('').map(char => { 
-            let isOpened = skippableSymbols.includes(char);
-            return   { char, revealed: isOpened };
+        word.split('').map(char => {
+          let isOpened = skippableSymbols.includes(char);
+          return { char, revealed: isOpened };
         })
       );
       setCurrentPosition({ wordIndex: 0, charIndex: 0 });
@@ -76,20 +85,20 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
     inputAnswerProgrammatically(inpWords: string[]) {
       const newWords = [...words];
       let charIndexGlb = -1;
-      let inpStr = inpWords.reduce((acc,word)=>{
-        return acc+word;
+      let inpStr = inpWords.reduce((acc, word) => {
+        return acc + word;
       })
       console.log(inpStr);
-      newWords.forEach((word,wrdIndex)=>{
-        word.forEach((ch,charIndex)=>{
+      newWords.forEach((word, wrdIndex) => {
+        word.forEach((ch, charIndex) => {
           charIndexGlb++;
-          if(ch.revealed) return;
-          if(charIndexGlb >= inpStr.length) return;
+          if (ch.revealed) return;
+          if (charIndexGlb >= inpStr.length) return;
           let inpChar = inpStr.charAt(charIndexGlb).toLocaleLowerCase();
           if (ch.char.toLocaleLowerCase() === inpChar) {
             ch.revealed = true;
-            setCurrentPosition({ wordIndex: wrdIndex, charIndex: charIndex+1 });
-            if(!calcHasHiddenChars()){
+            setCurrentPosition({ wordIndex: wrdIndex, charIndex: charIndex + 1 });
+            if (!calcHasHiddenChars()) {
               props.onComplete();
             }
           }
@@ -97,7 +106,7 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
       });
       //setWords(newWords);
     }
-  })); 
+  }));
 
   useEffect(() => {
     // Задержка для корректного открытия клавиатуры на мобильных
@@ -145,6 +154,8 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
         nextCharIndex = 0;
       }
 
+      playKeyPressSound();
+      console.log(pressedKey);
       if (nextWordIndex < words.length) {
         setCurrentPosition({ wordIndex: nextWordIndex, charIndex: nextCharIndex });
       } else {
@@ -180,12 +191,13 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
   let cellSize = 6;
   let cellFondSizeClass = "input-word__cellFsize";
   let longestWordInSymbols = words.reduce((maxLength, currentRow) => Math.max(maxLength, currentRow?.length || 0), 0);
-  if (words.length>5 || longestWordInSymbols>14) {
+  if (words.length > 5 || longestWordInSymbols > 14) {
     cellSize = 3;
     cellFondSizeClass = "input-word__cellFsizeSmall";
   }
   return (
     <div ref={containerRef} className="input-word" style={{ cursor: 'pointer' }} onClick={focusInput}>
+      <audio ref={audioRef} src={keypressSound} />
       <h1 className="input-word__question">{questionStr}</h1>
       <div className="input-word__container">
         {words.map((word, wordIndex) => (
@@ -202,7 +214,7 @@ const InputWord = forwardRef<InputWordsMethods,InputWordProps>((props, ref) => {
                     ${isActive ? 'input-word__cell--active' : ''}
                     ${char.revealed || showAnswer ? 'input-word__cell--revealed' : ''}
                   `}
-                  style={{width: cellSize+'vw', height: cellSize+'vw'}}
+                  style={{ width: cellSize + 'vw', height: cellSize + 'vw' }}
                 >
                   {(char.revealed || showAnswer) && (
                     <span className="input-word__char">
