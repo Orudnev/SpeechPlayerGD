@@ -269,7 +269,7 @@ export function CrosswordMemorizer() {
                 lang={currLang}
             />
             {status !== 'Loading...' && currentItem && <div>{currentItem.SheetName}</div>}
-            {status !== 'Loading...' && <GetPromptButton />}            
+            {status !== 'Loading...' && <GetPromptButton items={items} />}            
             <InputWord ref={inpWordRef}
                 onComplete={() => {
                     if (currentItem) {
@@ -281,7 +281,7 @@ export function CrosswordMemorizer() {
     );
 }
 
-export function GetPromptButton(){
+export function GetPromptButton({ items }: { items: IItem[] }) {
     const [visible, setVisible] = useState(false);
     const [caption, setCaption] = useState("Request prompt...");
     const [isRequested, setIsRequested] = useState(false);
@@ -307,7 +307,10 @@ export function GetPromptButton(){
         return (
             <button className='get-prompt-button' disabled={caption !== 'Copy to clipboard'} onClick={()=>{
                 try {
-                    navigator.clipboard.writeText((prompt as any).data.data);
+                    let promptText = (prompt as any).data.data;
+                    let promptData = JSON.stringify(items);
+                    let promptFullText = promptText + "\n\n" + promptData;
+                    navigator.clipboard.writeText(promptFullText);
                     setVisible(false);
                 } catch (err) {
                     setCaption("Не удалось скопировать текст");
