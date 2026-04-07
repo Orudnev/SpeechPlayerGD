@@ -75,6 +75,7 @@ export function SortRows(a:any,b:any){
 
 export function CrosswordMemorizer() {
     const inpWordRef = useRef<InputWordsMethods>(null);
+    const taskItemIndexRef = useRef(0);
     const [status, setStatus] = useState<TCrosswordPageStatus>('Loading...');
     const [items, setItems] = useState<IItem[]>([]);
     const [currentItem, setCurrentItem] = useState<IItem | undefined>(undefined);
@@ -92,48 +93,80 @@ export function CrosswordMemorizer() {
             }
         }
     };
+
+    const getNextTaskItem = () => {
+        const selectedTaskItemUids = AppSessionData.prop('PlCfg_SelectedTaskItemUids') || [];
+        if (selectedTaskItemUids.length === 0 || items.length === 0) {
+            return undefined;
+        }
+
+        for (let offset = 0; offset < selectedTaskItemUids.length; offset++) {
+            const itemIndex = (taskItemIndexRef.current + offset) % selectedTaskItemUids.length;
+            const itemUid = selectedTaskItemUids[itemIndex];
+            const taskItem = items.find((itm) => itm.uid === itemUid);
+            if (taskItem) {
+                taskItemIndexRef.current = (itemIndex + 1) % selectedTaskItemUids.length;
+                return taskItem;
+            }
+        }
+
+        return undefined;
+    };
+
     const goNextItem = () => {
-        const minIntervalSecond= 600;
-        const minInterval = minIntervalSecond * 1000;
         const dtnow = Date.now();
         if(currentItem && currentItem.r){
             currentItem.r.ts = dtnow;
         }
         let reverseOrder = AppSessionData.prop('PlCfg_ReverseOrder');
-        let newestItems = items.filter(itm=>{
-            return itm.r && dtnow - itm.r.ts <= minInterval;
-        });
-        let nextItems = items.filter(itm=>{
-            //1. отфильтровать элементы которые не использовались более minInterval
-            return itm.r && dtnow - itm.r.ts > minInterval;
-        })
-        .sort(SortRows);
-        if(nextItems.length === 0) {
-            //Подходящего элемента нет. Извлекаем элемент с наиболее старым таймштампом
-            nextItems = items.sort((a,b)=>{
-                if(a.r && b.r){
-                    let result = a.r.ts - b.r.ts;
-                    return result;
-                }
-                return 0;
+        let newCurrItem: IItem | undefined = undefined;
+
+        if (AppSessionData.prop('PlCfg_SelectItemsMode') === 'Tasks') {
+            newCurrItem = getNextTaskItem();
+        } else {
+            const minIntervalSecond= 600;
+            const minInterval = minIntervalSecond * 1000;
+            let newestItems = items.filter(itm=>{
+                return itm.r && dtnow - itm.r.ts <= minInterval;
+            });
+            let nextItems = items.filter(itm=>{
+                //1. отфильтровать элементы которые не использовались более minInterval
+                return itm.r && dtnow - itm.r.ts > minInterval;
             })
-        }
-        let newCurrItem = nextItems[0];
-        if(newCurrItem.SheetName === currentItem?.SheetName) {
-            //тот же Spreadsheet что и в прошлый раз
-            //попробуем найти элемент из другого Spreadsheet  
-            let newCurrItmVariant = nextItems.find(itm=>itm.SheetName !== currentItem?.SheetName);
-            if(newCurrItmVariant){
-                newCurrItem = newCurrItmVariant;
+            .sort(SortRows);
+            if(nextItems.length === 0) {
+                //Подходящего элемента нет. Извлекаем элемент с наиболее старым таймштампом
+                nextItems = items.sort((a,b)=>{
+                    if(a.r && b.r){
+                        let result = a.r.ts - b.r.ts;
+                        return result;
+                    }
+                    return 0;
+                })
+            }
+            newCurrItem = nextItems[0];
+            if(newCurrItem && newCurrItem.SheetName === currentItem?.SheetName) {
+                //тот же Spreadsheet что и в прошлый раз
+                //попробуем найти элемент из другого Spreadsheet  
+                let newCurrItmVariant = nextItems.find(itm=>itm.SheetName !== currentItem?.SheetName);
+                if(newCurrItmVariant){
+                    newCurrItem = newCurrItmVariant;
+                }
+            }
+            if(newCurrItem && newCurrItem.uid == currentItem?.uid){
+                //алгоритмом выбран тот же элемент, что и в прошлый раз
+                if(nextItems.length > 1){
+                    newCurrItem = nextItems[1];
+                }
             }
         }
-        if(newCurrItem.uid == currentItem?.uid){
-            //алгоритмом выбран тот же элемент, что и в прошлый раз
-            if(nextItems.length > 1){
-                newCurrItem = nextItems[1];
-            }
+
+        if (!newCurrItem) {
+            setStatus('Stopped');
+            return;
         }
-        if (inpWordRef.current && newCurrItem) {
+
+        if (inpWordRef.current) {
             if(reverseOrder) {
                 inpWordRef.current.loadNewItem(newCurrItem.a.text,newCurrItem.q.text);    
             } else {
@@ -155,9 +188,13 @@ export function CrosswordMemorizer() {
         waw.GetAllRows("All", (resp: waw.IApiResponse) => {
             if (resp.data.status == "ok") {
                 let allRows = resp.data.data;
-                let selectedSheetList = AppSessionData.prop('PlCfg_DataSheetNames');
-                let result = allRows.filter((row:any)=>selectedSheetList.find((shName:string)=>shName==row.SheetName));
-                setItems(result);
+                if (AppSessionData.prop('PlCfg_SelectItemsMode') === 'Tasks') {
+                    setItems(allRows);
+                } else {
+                    let selectedSheetList = AppSessionData.prop('PlCfg_DataSheetNames');
+                    let result = allRows.filter((row:any)=>selectedSheetList.find((shName:string)=>shName==row.SheetName));
+                    setItems(result);
+                }
                 setStatus('Stopped');
             }
         });        
@@ -166,6 +203,10 @@ export function CrosswordMemorizer() {
         reloadData();
     }, []);
     const currLang = AppSessionData.prop('PlCfg_ReverseOrder') ? "ru-RU":"en-US";
+    const selectItemsMode = AppSessionData.prop('PlCfg_SelectItemsMode');
+    const selectedTaskName = AppSessionData.prop('PlCfg_SelectedTask');
+    const selectedTaskItemUids = AppSessionData.prop('PlCfg_SelectedTaskItemUids') || [];
+    const currentTaskItemIndex = currentItem ? selectedTaskItemUids.findIndex((uid:string) => uid === currentItem.uid) + 1 : 0;
 
     const sayQuestion = (item:IItem)=>{
         let sbItem: ISubItem = { text: item.q.text, lang: item.q.lang };
@@ -212,6 +253,7 @@ export function CrosswordMemorizer() {
     const handleApplySettings = (selectedSheetListChanged: boolean) => {
         setIsSettingsMode(false);
         if (selectedSheetListChanged) {
+            taskItemIndexRef.current = 0;
             setCurrentItem(undefined);
             reloadData();            
         }
@@ -271,7 +313,8 @@ export function CrosswordMemorizer() {
                 listening={isMicrophoneOn}
                 lang={currLang}
             />
-            {status !== 'Loading...' && currentItem && <div>{currentItem.SheetName}</div>}
+            {status !== 'Loading...' && currentItem && selectItemsMode === 'Data sheets' && <div>{currentItem.SheetName}</div>}
+            {status !== 'Loading...' && currentItem && selectItemsMode === 'Tasks' && <div>{selectedTaskName} {currentTaskItemIndex}/{selectedTaskItemUids.length}</div>}
             {status !== 'Loading...' && <GetPromptButton items={items} />}            
             <InputWord ref={inpWordRef}
                 onComplete={() => {
