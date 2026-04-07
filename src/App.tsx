@@ -78,6 +78,11 @@ class AppGlobalClass {
   getPrompt(){
     window.dispatchEvent(new CustomEvent("promptbtn:toggle",{detail:true}));
   }
+  
+  getAppSessionData(){
+    return AppSessionData;
+  }
+
 }
 
 export const AppGlobal = new AppGlobalClass();

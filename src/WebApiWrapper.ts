@@ -2,7 +2,7 @@ import axios from "axios";
 import { IItem } from "./CommonTypes";
 
 
-const webApiBaseUrl = 'https://script.google.com/macros/s/AKfycbwHKG2q6wNLlVUGupFSOjEGrN3KpRc4eSoGqjK6YZlxkIcTo5V0hP24MVtvVUqDFpTqxw/exec';
+const webApiBaseUrl = 'https://script.google.com/macros/s/AKfycby6LK-yQlCbfHeVWJ07OKsucHmedgjRrf4LO6fqPuKeLmZ3o5c4C3JucR68E-J-9CMFJQ/exec';
 export interface IApiResponse{
     status:string;
     data:any;
@@ -17,6 +17,30 @@ export function GetSheetNames(handler:(response:IApiResponse)=>void){
     .then((response:any)=>{
         if(handler){
             handler(response.data);
+        }
+    });
+}
+
+export function GetTaskList(handler:(response:IApiResponse)=>void){
+    return axios({
+        url:webApiBaseUrl,
+        method:'GET',
+        params:{method:'getTaskList'}
+    })
+    .then((response:any)=>{
+        if(handler){
+            if(response.data.status === "ok"){
+                //Ok
+                handler(response);
+            } else {
+                //Error
+                handler(response.data);
+            }
+        }
+    })
+    .catch((err)=>{
+        if(handler){
+            handler(err);
         }
     });
 }

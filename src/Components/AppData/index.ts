@@ -52,6 +52,9 @@ export interface IAppSession{
     PlCfg_ReverseOrder:boolean;
     PlCfg_DefaultPageTitle:string;
     PlCfg_DataSheetNames:string[];
+    PlCfg_SelectItemsMode:string;
+    PlCfg_SelectedTask:string;
+    PlCfg_SelectedTaskItemUids:string[]|undefined;
 }
 
 
@@ -61,11 +64,15 @@ const AppSessionDataDefaultValues:IAppSession = {
     PlCfg_ListenAnswer:true,
     PlCfg_DefaultPageTitle:"SpeechPlayerGD",
     PlCfg_ReverseOrder:false,
-    PlCfg_DataSheetNames:["Verbs"]
+    PlCfg_DataSheetNames:["Verbs"],
+    PlCfg_SelectItemsMode:"Data sheets",
+    PlCfg_SelectedTask:"Demo task 1",
+    PlCfg_SelectedTaskItemUids:[]
 }
 
 const CashedProps = {
     CP_SelectedSheetNames:undefined,
+    CP_TaskList:undefined
 }
 
 
