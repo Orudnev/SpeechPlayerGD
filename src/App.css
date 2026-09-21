@@ -65,4 +65,31 @@
     top: 3px
 }
 
+.difficulty-editor{
+    display:flex;
+    flex-direction: row;
+    margin-top: 10px;
+    align-items: center;
+}
+
+.difficulty-editor__label{
+    margin-right: 10px;
+    font-size: 30px;
+}
+
+.difficulty-editor__button{
+    font-weight: 600;
+    font-size: 50px;
+}
+.difficulty-editor__button--selected{
+    background-color: lightgreen;
+}
+.difficulty-editor__description{
+    font-size: 20px;
+    align-self: center;
+    margin-left: 10px;
+    padding: 5px;
+    border-radius: 5px;
+}
+
 

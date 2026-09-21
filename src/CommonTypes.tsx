@@ -17,6 +17,7 @@ export interface IResult {
   // fsa: number;   //forward (question->answer) succeded answers
   // rsa: number;   //reverse (answer->question) succeded answers
   Aw: number;      //Кол-во успешных ответов письменных (прямых)
+  Dfclty?:number;    //Трудность карточки установленная вручную
 }
 
 export interface IItem {  

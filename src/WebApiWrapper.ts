@@ -86,7 +86,8 @@ export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void):
                     Aer:itm.Aer || 0,
                     Aef:itm.Aef || 0,
                     Aw:itm.Aw || 0,
-                    ts:itm.Ts || 0}
+                    ts:itm.Ts || 0,
+                    Dfclty:itm.Dfclty || 0}
             }));
             apiResponse.data = items;
         } else {

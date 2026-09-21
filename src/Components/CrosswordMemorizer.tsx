@@ -7,20 +7,21 @@ import { SayText } from './SayText';
 import { Settings } from './Settings';
 import { SpeechRecognizer } from './SR/SpeechRecognizer';
 import App, { AppGlobal } from '../App';
+import { DifficultyEditor } from './DifficultyEditor';
 
 function UpdateItemRating(currItem: IItem, addSuccessCount: boolean): void {
     if (!currItem.r) {
         currItem.r = { Asf: 0, Aw: 0, Aef: 0, Aer: 0, Asr: 0, lcnt: 0, ts: 0 };
     }
     if (addSuccessCount) {
-        if(AppSessionData.prop('PlCfg_ReverseOrder')){
+        if (AppSessionData.prop('PlCfg_ReverseOrder')) {
             currItem.r.Asr++;
-            if(currItem.r.Aer > 0) currItem.r.Aer--;
-            if(currItem.r.lcnt<currItem.r.Asr) currItem.r.lcnt = currItem.r.Asr;
+            if (currItem.r.Aer > 0) currItem.r.Aer--;
+            if (currItem.r.lcnt < currItem.r.Asr) currItem.r.lcnt = currItem.r.Asr;
         } else {
             currItem.r.Asf++;
-            if(currItem.r.Aef > 0) currItem.r.Aef--;
-            if(currItem.r.lcnt<currItem.r.Asf) currItem.r.lcnt = currItem.r.Asf;
+            if (currItem.r.Aef > 0) currItem.r.Aef--;
+            if (currItem.r.lcnt < currItem.r.Asf) currItem.r.lcnt = currItem.r.Asf;
         }
         SendItemRatingsToServer(currItem);
         return;
@@ -40,34 +41,35 @@ function SendItemRatingsToServer(itm: IItem) {
         Asr: itm.r?.Asr,
         Aer: itm.r?.Aer,
         Aef: itm.r?.Aef,
-        Ts: itm.r?.ts
+        Ts: itm.r?.ts,
+        Dfclty: itm.r?.Dfclty
     };
     waw.UpdateRows(itm.SheetName, [row]);
 }
 
 
-export function SortRows(a:any,b:any){
+export function SortRows(a: any, b: any) {
     let reverseOrder = AppSessionData.prop('PlCfg_ReverseOrder');
-    if(a.r && b.r){
+    if (a.r && b.r) {
         //2. если один из элементов не использовался, сотритуем по количеству просмотров (защита от деления на 0)
-        if(a.r.lcnt === 0 || b.r.lcnt === 0) {
+        if (a.r.lcnt === 0 || b.r.lcnt === 0) {
             return a.r.lcnt - b.r.lcnt;
         }
 
         //3. Сортировать по критерию ошибки/количество просмотров
-        let result = b.r.Aef - a.r.Aef; 
-        if(reverseOrder){
-            result = b.r.Aer - a.r.Aer; 
+        let result = b.r.Aef - a.r.Aef;
+        if (reverseOrder) {
+            result = b.r.Aer - a.r.Aer;
         }
-        if(result != 0){
+        if (result != 0) {
             return result;
-        } 
-        
+        }
+
         //4. Сортировать по критерию успешные ответы/количество просмотров 
         result = a.r.Asf - b.r.Asf;
-        if(reverseOrder){
+        if (reverseOrder) {
             result = a.r.Asr - b.r.Asr;
-        }    
+        }
         return result;
     }
     return 0;
@@ -115,7 +117,7 @@ export function CrosswordMemorizer() {
 
     const goNextItem = () => {
         const dtnow = Date.now();
-        if(currentItem && currentItem.r){
+        if (currentItem && currentItem.r) {
             currentItem.r.ts = dtnow;
         }
         let reverseOrder = AppSessionData.prop('PlCfg_ReverseOrder');
@@ -124,20 +126,20 @@ export function CrosswordMemorizer() {
         if (AppSessionData.prop('PlCfg_SelectItemsMode') === 'Tasks') {
             newCurrItem = getNextTaskItem();
         } else {
-            const minIntervalSecond= 600;
+            const minIntervalSecond = 600;
             const minInterval = minIntervalSecond * 1000;
-            let newestItems = items.filter(itm=>{
+            let newestItems = items.filter(itm => {
                 return itm.r && dtnow - itm.r.ts <= minInterval;
             });
-            let nextItems = items.filter(itm=>{
+            let nextItems = items.filter(itm => {
                 //1. отфильтровать элементы которые не использовались более minInterval
                 return itm.r && dtnow - itm.r.ts > minInterval;
             })
-            .sort(SortRows);
-            if(nextItems.length === 0) {
+                .sort(SortRows);
+            if (nextItems.length === 0) {
                 //Подходящего элемента нет. Извлекаем элемент с наиболее старым таймштампом
-                nextItems = items.sort((a,b)=>{
-                    if(a.r && b.r){
+                nextItems = items.sort((a, b) => {
+                    if (a.r && b.r) {
                         let result = a.r.ts - b.r.ts;
                         return result;
                     }
@@ -145,17 +147,17 @@ export function CrosswordMemorizer() {
                 })
             }
             newCurrItem = nextItems[0];
-            if(newCurrItem && newCurrItem.SheetName === currentItem?.SheetName) {
+            if (newCurrItem && newCurrItem.SheetName === currentItem?.SheetName) {
                 //тот же Spreadsheet что и в прошлый раз
                 //попробуем найти элемент из другого Spreadsheet  
-                let newCurrItmVariant = nextItems.find(itm=>itm.SheetName !== currentItem?.SheetName);
-                if(newCurrItmVariant){
+                let newCurrItmVariant = nextItems.find(itm => itm.SheetName !== currentItem?.SheetName);
+                if (newCurrItmVariant) {
                     newCurrItem = newCurrItmVariant;
                 }
             }
-            if(newCurrItem && newCurrItem.uid == currentItem?.uid){
+            if (newCurrItem && newCurrItem.uid == currentItem?.uid) {
                 //алгоритмом выбран тот же элемент, что и в прошлый раз
-                if(nextItems.length > 1){
+                if (nextItems.length > 1) {
                     newCurrItem = nextItems[1];
                 }
             }
@@ -167,15 +169,15 @@ export function CrosswordMemorizer() {
         }
 
         if (inpWordRef.current) {
-            if(reverseOrder) {
-                inpWordRef.current.loadNewItem(newCurrItem.a.text,newCurrItem.q.text);    
+            if (reverseOrder) {
+                inpWordRef.current.loadNewItem(newCurrItem.a.text, newCurrItem.q.text);
             } else {
                 inpWordRef.current.loadNewItem(newCurrItem.q.text, newCurrItem.a.text);
             }
 
             setStatus("Started");
         }
-        if(currentItem){
+        if (currentItem) {
             UpdateItemRating(currentItem, false);
         }
         setCurrentItem(newCurrItem);
@@ -185,6 +187,8 @@ export function CrosswordMemorizer() {
 
     const reloadData = () => {
         setStatus('Loading...');
+        setStatus('Stopped');
+        return;
         waw.GetAllRows("All", (resp: waw.IApiResponse) => {
             if (resp.status === "ok") {
                 let allRows = resp.data;
@@ -192,7 +196,7 @@ export function CrosswordMemorizer() {
                     setItems(allRows);
                 } else {
                     let selectedSheetList = AppSessionData.prop('PlCfg_DataSheetNames');
-                    let result = allRows.filter((row:any)=>selectedSheetList.find((shName:string)=>shName==row.SheetName));
+                    let result = allRows.filter((row: any) => selectedSheetList.find((shName: string) => shName == row.SheetName));
                     setItems(result);
                 }
                 setStatus('Stopped');
@@ -200,20 +204,20 @@ export function CrosswordMemorizer() {
                 // Do not leave the page in Loading state after a timeout/network error.
                 setStatus('Stopped');
             }
-        });        
+        });
     };
     useEffect(() => {
         reloadData();
     }, []);
-    const currLang = AppSessionData.prop('PlCfg_ReverseOrder') ? "ru-RU":"en-US";
+    const currLang = AppSessionData.prop('PlCfg_ReverseOrder') ? "ru-RU" : "en-US";
     const selectItemsMode = AppSessionData.prop('PlCfg_SelectItemsMode');
     const selectedTaskName = AppSessionData.prop('PlCfg_SelectedTask');
     const selectedTaskItemUids = AppSessionData.prop('PlCfg_SelectedTaskItemUids') || [];
-    const currentTaskItemIndex = currentItem ? selectedTaskItemUids.findIndex((uid:string) => uid === currentItem.uid) + 1 : 0;
+    const currentTaskItemIndex = currentItem ? selectedTaskItemUids.findIndex((uid: string) => uid === currentItem.uid) + 1 : 0;
 
-    const sayQuestion = (item:IItem)=>{
+    const sayQuestion = (item: IItem) => {
         let sbItem: ISubItem = { text: item.q.text, lang: item.q.lang };
-        if(AppSessionData.prop('PlCfg_ReverseOrder')) {
+        if (AppSessionData.prop('PlCfg_ReverseOrder')) {
             sbItem = { text: item.a.text, lang: item.a.lang };
         }
         setIsSpeaking(true);
@@ -224,7 +228,7 @@ export function CrosswordMemorizer() {
     const sayAnswer = (onComplete?: () => void) => {
         if (currentItem) {
             let sbItem: ISubItem = { text: currentItem.a.text, lang: currentItem.a.lang };
-            if(AppSessionData.prop('PlCfg_ReverseOrder')) {
+            if (AppSessionData.prop('PlCfg_ReverseOrder')) {
                 sbItem = { text: currentItem.q.text, lang: currentItem.q.lang };
             }
             setIsSpeaking(true);
@@ -242,10 +246,10 @@ export function CrosswordMemorizer() {
             inpWordRef.current?.showAnswer(true);
             sayAnswer();
             let rptTimes = 1; //Количество повторений при отказе от ответа
-            if(currentItem && currentItem.r){
-                currentItem.r.Aef+=rptTimes;
+            if (currentItem && currentItem.r) {
+                currentItem.r.Aef += rptTimes;
                 currentItem.r.ts = Date.now();
-            }            
+            }
         }
         if (status === "ShowAnswer") {
             setStatus("Started");
@@ -258,7 +262,7 @@ export function CrosswordMemorizer() {
         if (selectedSheetListChanged) {
             taskItemIndexRef.current = 0;
             setCurrentItem(undefined);
-            reloadData();            
+            reloadData();
         }
     };
 
@@ -271,6 +275,7 @@ export function CrosswordMemorizer() {
     }
     const soundBtnClass = isSpeaking ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';
     const microphoneBtnClass = isMicrophoneOn ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';
+    const showDifficultButtons = status !== 'Loading...' && currentItem && currentItem.r && currentItem.r.hasOwnProperty('Dfclty');
     return (
         <div className='ph-mem'>
             {status == 'Loading...' && <div>loading...</div>}
@@ -296,12 +301,12 @@ export function CrosswordMemorizer() {
                         }} onMouseUp={() => {
                             setIsMicrophoneOn(false);
                         }}
-                        onTouchStart={() => {
-                            setIsMicrophoneOn(true);
-                        }}
-                        onTouchEnd={()=>{
-                            setIsMicrophoneOn(false);
-                        }}
+                            onTouchStart={() => {
+                                setIsMicrophoneOn(true);
+                            }}
+                            onTouchEnd={() => {
+                                setIsMicrophoneOn(false);
+                            }}
                         >
                             <div className="img-btn img-microphoneOn" />
                         </button>
@@ -310,7 +315,7 @@ export function CrosswordMemorizer() {
 
             )}
             <SpeechRecognizer
-                onWordsRecognized={(words: string[])=>{
+                onWordsRecognized={(words: string[]) => {
                     inpWordRef.current?.inputAnswerProgrammatically(words);
                 }}
                 listening={isMicrophoneOn}
@@ -318,7 +323,12 @@ export function CrosswordMemorizer() {
             />
             {status !== 'Loading...' && currentItem && selectItemsMode === 'Data sheets' && <div>{currentItem.SheetName}</div>}
             {status !== 'Loading...' && currentItem && selectItemsMode === 'Tasks' && <div>{selectedTaskName} {currentTaskItemIndex}/{selectedTaskItemUids.length}</div>}
-            {status !== 'Loading...' && <GetPromptButton items={items} />}            
+            {showDifficultButtons && (
+                <DifficultyEditor item={currentItem} onChange={()=>{}} />
+            )
+            }
+
+            {status !== 'Loading...' && <GetPromptButton items={items} />}
             <InputWord ref={inpWordRef}
                 onComplete={() => {
                     if (currentItem) {
@@ -334,27 +344,27 @@ export function GetPromptButton({ items }: { items: IItem[] }) {
     const [visible, setVisible] = useState(false);
     const [caption, setCaption] = useState("Request prompt...");
     const [isRequested, setIsRequested] = useState(false);
-    const [prompt,setPrompt] = useState({});
+    const [prompt, setPrompt] = useState({});
     useEffect(() => {
-        const handler = (e:any) => setVisible(e.detail);
+        const handler = (e: any) => setVisible(e.detail);
 
         window.addEventListener("promptbtn:toggle", handler);
         return () => window.removeEventListener("promptbtn:toggle", handler);
     }, []);
 
-    if(visible){
-        if(!isRequested){
+    if (visible) {
+        if (!isRequested) {
             waw.GetPrompt()
-                .then((resp:any)=>{
-                  setPrompt(resp);  
-                  setCaption("Copy to clipboard")
+                .then((resp: any) => {
+                    setPrompt(resp);
+                    setCaption("Copy to clipboard")
                 })
-                .catch((err:any)=>{
-                  setCaption("Error");
-                });            
+                .catch((err: any) => {
+                    setCaption("Error");
+                });
         }
         return (
-            <button className='get-prompt-button' disabled={caption !== 'Copy to clipboard'} onClick={()=>{
+            <button className='get-prompt-button' disabled={caption !== 'Copy to clipboard'} onClick={() => {
                 try {
                     let promptText = (prompt as any).data.data;
                     let promptData = JSON.stringify(items);
@@ -363,7 +373,7 @@ export function GetPromptButton({ items }: { items: IItem[] }) {
                     setVisible(false);
                 } catch (err) {
                     setCaption("Не удалось скопировать текст");
-                }                
+                }
             }} >
                 {caption}
             </button>
