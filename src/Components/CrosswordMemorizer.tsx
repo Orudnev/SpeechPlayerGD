@@ -186,8 +186,8 @@ export function CrosswordMemorizer() {
     const reloadData = () => {
         setStatus('Loading...');
         waw.GetAllRows("All", (resp: waw.IApiResponse) => {
-            if (resp.data.status == "ok") {
-                let allRows = resp.data.data;
+            if (resp.status === "ok") {
+                let allRows = resp.data;
                 if (AppSessionData.prop('PlCfg_SelectItemsMode') === 'Tasks') {
                     setItems(allRows);
                 } else {
@@ -195,6 +195,9 @@ export function CrosswordMemorizer() {
                     let result = allRows.filter((row:any)=>selectedSheetList.find((shName:string)=>shName==row.SheetName));
                     setItems(result);
                 }
+                setStatus('Stopped');
+            } else {
+                // Do not leave the page in Loading state after a timeout/network error.
                 setStatus('Stopped');
             }
         });        

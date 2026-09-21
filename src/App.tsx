@@ -49,8 +49,8 @@ class AppGlobalClass {
 
   getAllRows(handler:(response:IApiResponse)=>void) {
     GetAllRows("All", (resp: IApiResponse) => {
-      if(resp.data.status == "ok") {
-        handler(resp.data.data.sort(SortRows));
+      if(resp.status === "ok") {
+        handler(resp.data.sort(SortRows));
       } else {
         handler(resp);
       }

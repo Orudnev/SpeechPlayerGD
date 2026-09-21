@@ -6,6 +6,11 @@ const webApiBaseUrl = 'https://script.google.com/macros/s/AKfycby6LK-yQlCbfHeVWJ
 export interface IApiResponse{
     status:string;
     data:any;
+    error?: {
+        message:string;
+        code?:string;
+        httpStatus?:number;
+    };
 }
 
 export function GetSheetNames(handler:(response:IApiResponse)=>void){
@@ -45,47 +50,67 @@ export function GetTaskList(handler:(response:IApiResponse)=>void){
     });
 }
 
-export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void){
-    axios({
+export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void):Promise<IApiResponse>{
+    const callHandler = (response:IApiResponse) => {
+        try {
+            handler(response);
+        } catch (err) {
+            // An exception in UI code must not be reported as an HTTP failure.
+            console.error("GetAllRows response handler failed", err);
+        }
+    };
+
+    return axios<IApiResponse>({
         url:webApiBaseUrl,
         method:'GET',
-        params:{method:'getAllRows',sheetName:shName}
+        params:{method:'getAllRows',sheetName:shName},
+        // Axios otherwise waits indefinitely (its default timeout is 0).
+        timeout:25_000,
+        timeoutErrorMessage:'GetAllRows request timed out after 25 seconds'
     })
-    .then((response:any)=>{
-        if(handler){
-            if(response.data.status === "ok"){
-                //Ok
-                let itemsSrc:any[] = response.data.data;
-                let items:IItem[] = [];
-                itemsSrc.forEach((itm) => {
-                    let newItm:IItem = {
-                            SheetName:itm.SheetName,
-                            uid:itm.Uid,
-                            q:{lang:'ru-RU',text:itm.Ru},
-                            a:{lang:'en-US',text:itm.En},
-                            r:{lcnt:itm.Lcnt?itm.Lcnt:0,
-                                Asf:itm.Asf?itm.Asf:0,
-                                Asr:itm.Asr?itm.Asr:0,
-                                Aer:itm.Aer?itm.Aer:0,
-                                Aef:itm.Aef?itm.Aef:0,
-                                Aw:itm.Aw?itm.Aw:0,
-                                ts:itm.Ts?itm.Ts:0}};
-                    items.push(newItm);
-                });
-                response.data.data = items;
-                handler(response);
-            } else {
-                //Error
-                handler(response.data);
+    .then((response) => {
+        const apiResponse = response.data;
+        if (apiResponse.status === "ok") {
+            if (!Array.isArray(apiResponse.data)) {
+                throw new Error('GetAllRows returned an invalid data payload');
             }
+
+            const items:IItem[] = apiResponse.data.map((itm:any) => ({
+                SheetName:itm.SheetName,
+                uid:itm.Uid,
+                q:{lang:'ru-RU',text:itm.Ru},
+                a:{lang:'en-US',text:itm.En},
+                r:{lcnt:itm.Lcnt || 0,
+                    Asf:itm.Asf || 0,
+                    Asr:itm.Asr || 0,
+                    Aer:itm.Aer || 0,
+                    Aef:itm.Aef || 0,
+                    Aw:itm.Aw || 0,
+                    ts:itm.Ts || 0}
+            }));
+            apiResponse.data = items;
+        } else {
+            console.warn('GetAllRows API returned an error', apiResponse);
         }
+
+        callHandler(apiResponse);
+        return apiResponse;
     })
-    .catch((err)=>{
-        if(handler){
-            handler(err);
-        }
-    }
-    );
+    .catch((err:unknown) => {
+        const axiosError = axios.isAxiosError(err) ? err : undefined;
+        const errorResponse:IApiResponse = {
+            status:'error',
+            data:null,
+            error:{
+                message:axiosError?.message || (err instanceof Error ? err.message : 'Unknown GetAllRows error'),
+                code:axiosError?.code,
+                httpStatus:axiosError?.response?.status
+            }
+        };
+        console.error('GetAllRows failed', errorResponse.error, err);
+        callHandler(errorResponse);
+        return errorResponse;
+    });
 }
 
 
