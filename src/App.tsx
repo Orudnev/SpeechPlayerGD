@@ -47,21 +47,23 @@ class AppGlobalClass {
     return st;
   }
 
-  getAllRows(handler:(response:IApiResponse)=>void) {
-    GetAllRows("All", (resp: IApiResponse) => {
-      if(resp.status === "ok") {
-        handler(resp.data.sort(SortRows));
-      } else {
-        handler(resp);
-      }
-      console.log("done");
-    })
-    return "Requesting Server...";
+  async getAllRows(): Promise<IApiResponse> {
+    const response = await GetAllRows("All");
+    if (response.status === "ok") {
+      response.data.sort(SortRows);
+    }
+    console.log("done");
+    return response;
   }
 
-  printAllRows(onlyText:boolean = false){
-    this.getAllRows((rows:any)=>{
-      rows.forEach((itm:any)=>{
+  async printAllRows(onlyText:boolean = false){
+    const response = await this.getAllRows();
+    if (response.status !== "ok") {
+      console.error("Unable to load rows", response.error);
+      return;
+    }
+
+    response.data.forEach((itm:any)=>{
         let d = new Date(itm.r.ts);
         let dStr = d.getFullYear().toString()+(d.getMonth()+1).toString() + d.getDate().toString() +" "+d.getHours().toString() +":"+d.getMinutes().toString()+":"+ d.getSeconds().toString();
         let out=dStr+" "+itm.SheetName+" "+itm.a.text+"\r";
@@ -72,7 +74,6 @@ class AppGlobalClass {
           console.log(out);          
         } 
     });
-    });    
   } 
 
   getPrompt(){

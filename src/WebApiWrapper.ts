@@ -50,31 +50,27 @@ export function GetTaskList(handler:(response:IApiResponse)=>void){
     });
 }
 
-export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void):Promise<IApiResponse>{
-    const callHandler = (response:IApiResponse) => {
-        try {
-            handler(response);
-        } catch (err) {
-            // An exception in UI code must not be reported as an HTTP failure.
-            console.error("GetAllRows response handler failed", err);
-        }
-    };
-
-    return axios<IApiResponse>({
+export async function GetAllRows(shName:string):Promise<IApiResponse>{
+    try {
+        const response = await axios<IApiResponse>({
         url:webApiBaseUrl,
         method:'GET',
         params:{method:'getAllRows',sheetName:shName},
         // Axios otherwise waits indefinitely (its default timeout is 0).
         timeout:25_000,
         timeoutErrorMessage:'GetAllRows request timed out after 25 seconds'
-    })
-    .then((response) => {
+        });
         const apiResponse = response.data;
         if (apiResponse.status === "ok") {
             if (!Array.isArray(apiResponse.data)) {
                 throw new Error('GetAllRows returned an invalid data payload');
             }
-
+            const getImg = (imgStr:string)=>{
+                if(!imgStr){
+                    return undefined;
+                }
+                return imgStr.split(',');
+            }
             const items:IItem[] = apiResponse.data.map((itm:any) => ({
                 SheetName:itm.SheetName,
                 uid:itm.Uid,
@@ -87,17 +83,16 @@ export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void):
                     Aef:itm.Aef || 0,
                     Aw:itm.Aw || 0,
                     ts:itm.Ts || 0,
-                    Dfclty:itm.Dfclty || 0}
+                    Dfclty:itm.Dfclty || 0},
+                Img:getImg(itm.Img)
             }));
             apiResponse.data = items;
         } else {
             console.warn('GetAllRows API returned an error', apiResponse);
         }
 
-        callHandler(apiResponse);
         return apiResponse;
-    })
-    .catch((err:unknown) => {
+    } catch (err:unknown) {
         const axiosError = axios.isAxiosError(err) ? err : undefined;
         const errorResponse:IApiResponse = {
             status:'error',
@@ -109,9 +104,8 @@ export function GetAllRows(shName:string,handler:(response:IApiResponse)=>void):
             }
         };
         console.error('GetAllRows failed', errorResponse.error, err);
-        callHandler(errorResponse);
         return errorResponse;
-    });
+    }
 }
 
 

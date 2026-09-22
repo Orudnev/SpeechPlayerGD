@@ -11,31 +11,28 @@ export const DifficultyEditor: React.FC<TDifficultyEditorProps> = ({
   item,
   onChange,
 }) => {
-  const ratingValue = (!item.r || !item.r.Dfclty || item.r.Dfclty === 0) ? 2 : item.r.Dfclty;  
+  const ratingValue = (!item.r || !item.r.Dfclty || item.r.Dfclty === 0) ? 3 : item.r.Dfclty;  
   const getDescription = ()=>{
     switch (ratingValue) {
-        case 2:
+        case 3:
             return {text:"Forgot", style:{backgroundColor:'red',color:'white'}};
+        case 2:
+            return {text:"Draw a blanc", style:{backgroundColor:'yellow',color:'black'}};
         case 1:
-            return {text:"Forgot", style:{backgroundColor:'yellow',color:'black'}};
-        case 0:
-            return {text:"Forgot", style:{backgroundColor:'lightGreen',color:'black'}};
+            return {text:"Remember", style:{backgroundColor:'lightGreen',color:'black'}};
 
     }
   };
   const descriptObj = getDescription();
   return (
     <div className="difficulty-editor">
-      <span className="difficulty-editor__label">
-        Difficulty rating:
-      </span>
-
+      <div className="difficulty-editor__image"></div>
       <div className="difficulty-editor__buttons">
-        {[2, 1, 0].map((rating) => (
+        {[3, 2, 1].map((rating) => (
           <button 
             key={rating}
             type="button"
-            className={`toolbar-button difficulty-editor__button ${
+            className={`difficulty-editor__button ${
               ratingValue === rating ? 'difficulty-editor__button--selected' : ''
             }`}
             onClick={() => onChange(rating)}

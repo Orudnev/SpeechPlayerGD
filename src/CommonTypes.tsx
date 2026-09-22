@@ -28,6 +28,7 @@ export interface IItem {
   // если q.lang == 'ru-RU' то экземпляр Item считается "прямым"
   // если q.lang == 'en-US' то экземпляр Item считается "обратным"
   r: IResult | undefined; //рейтинг 
+  Img?:string[];
 }
 
 export interface IAppPage {

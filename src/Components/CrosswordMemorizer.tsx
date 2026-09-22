@@ -185,26 +185,23 @@ export function CrosswordMemorizer() {
         setStatus("LoadNewItem");
     }
 
-    const reloadData = () => {
+    const reloadData = async () => {
         setStatus('Loading...');
-        setStatus('Stopped');
-        return;
-        waw.GetAllRows("All", (resp: waw.IApiResponse) => {
-            if (resp.status === "ok") {
-                let allRows = resp.data;
-                if (AppSessionData.prop('PlCfg_SelectItemsMode') === 'Tasks') {
-                    setItems(allRows);
-                } else {
-                    let selectedSheetList = AppSessionData.prop('PlCfg_DataSheetNames');
-                    let result = allRows.filter((row: any) => selectedSheetList.find((shName: string) => shName == row.SheetName));
-                    setItems(result);
-                }
-                setStatus('Stopped');
+        //setStatus('Stopped');
+        //return;
+        const resp = await waw.GetAllRows("All");
+        if (resp.status === "ok") {
+            const allRows = resp.data;
+            if (AppSessionData.prop('PlCfg_SelectItemsMode') === 'Tasks') {
+                setItems(allRows);
             } else {
-                // Do not leave the page in Loading state after a timeout/network error.
-                setStatus('Stopped');
+                const selectedSheetList = AppSessionData.prop('PlCfg_DataSheetNames');
+                const result = allRows.filter((row: any) => selectedSheetList.find((shName: string) => shName == row.SheetName));
+                setItems(result);
             }
-        });
+        }
+        // Do not leave the page in Loading state after a timeout/network error.
+        setStatus('Stopped');
     };
     useEffect(() => {
         reloadData();
@@ -276,6 +273,7 @@ export function CrosswordMemorizer() {
     const soundBtnClass = isSpeaking ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';
     const microphoneBtnClass = isMicrophoneOn ? 'toolbar-button toolbar-button_pressed' : 'toolbar-button';
     const showDifficultButtons = status !== 'Loading...' && currentItem && currentItem.r && currentItem.r.hasOwnProperty('Dfclty');
+    const imgUrlPrefix = "https://sptrainer-img.olrudnev.workers.dev/";
     return (
         <div className='ph-mem'>
             {status == 'Loading...' && <div>loading...</div>}
@@ -311,6 +309,22 @@ export function CrosswordMemorizer() {
                             <div className="img-btn img-microphoneOn" />
                         </button>
                     }
+                    {showDifficultButtons && (
+                        <DifficultyEditor item={currentItem} onChange={(difficulty) => {
+                            setItems(prevItems => {
+                                return prevItems.map(itm => {
+                                    if (itm.uid === currentItem.uid) {
+                                        if (itm.r) {
+                                            itm.r.Dfclty = difficulty;
+                                        }
+                                    }
+                                    return itm;
+                                });
+                            })
+
+                        }} />
+                    )
+                    }
                 </div>
 
             )}
@@ -323,12 +337,17 @@ export function CrosswordMemorizer() {
             />
             {status !== 'Loading...' && currentItem && selectItemsMode === 'Data sheets' && <div>{currentItem.SheetName}</div>}
             {status !== 'Loading...' && currentItem && selectItemsMode === 'Tasks' && <div>{selectedTaskName} {currentTaskItemIndex}/{selectedTaskItemUids.length}</div>}
-            {showDifficultButtons && (
-                <DifficultyEditor item={currentItem} onChange={()=>{}} />
-            )
-            }
-
             {status !== 'Loading...' && <GetPromptButton items={items} />}
+            {status !== 'Loading...' && currentItem && currentItem.Img && (
+                <div className="img-gallery">
+                    {currentItem.Img.map((imgFileName,idx) => {
+                        const imgUrl = imgUrlPrefix + imgFileName;
+                        return (
+                            <img key={idx} className="img-gallery__item" src={imgUrl} />
+                        )
+                    })}
+                </div>)
+            }
             <InputWord ref={inpWordRef}
                 onComplete={() => {
                     if (currentItem) {
