@@ -47,6 +47,18 @@ function SendItemRatingsToServer(itm: IItem) {
     waw.UpdateRows(itm.SheetName, [row]);
 }
 
+function SortRowsDfclt(a: any, b: any){
+    if (a.r && b.r) {
+        const da = !a.r.Dfclty? 3 : a.r.Dfclty;
+        const db = !b.r.Dfclty? 3 : b.r.Dfclty;
+        const result =  db - da;
+        if (result === 0){
+            return SortRows(a,b);
+        }
+        return result;
+    }
+    return 0;
+}
 
 export function SortRows(a: any, b: any) {
     let reverseOrder = AppSessionData.prop('PlCfg_ReverseOrder');
@@ -135,7 +147,15 @@ export function CrosswordMemorizer() {
                 //1. отфильтровать элементы которые не использовались более minInterval
                 return itm.r && dtnow - itm.r.ts > minInterval;
             })
-                .sort(SortRows);
+            const hasDfcltyProp = items && items.length>0 && items[0].r && items[0].r && items[0].r.hasOwnProperty('Dfclty');
+            if(nextItems.length > 0){
+                nextItems = nextItems.sort(hasDfcltyProp?SortRowsDfclt:SortRows);
+            } else {
+                if(hasDfcltyProp){
+                    nextItems = items.sort(SortRowsDfclt);
+                }
+            }
+
             if (nextItems.length === 0) {
                 //Подходящего элемента нет. Извлекаем элемент с наиболее старым таймштампом
                 nextItems = items.sort((a, b) => {
