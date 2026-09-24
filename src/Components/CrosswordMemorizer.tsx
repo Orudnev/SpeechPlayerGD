@@ -90,6 +90,9 @@ export function SortRows(a: any, b: any) {
 export function CrosswordMemorizer() {
     const inpWordRef = useRef<InputWordsMethods>(null);
     const taskItemIndexRef = useRef(0);
+    // State is kept in a ref because an answer may be completed before React
+    // has rendered the `end` callback's state update.
+    const isQuestionSpeakingRef = useRef(false);
     const [status, setStatus] = useState<TCrosswordPageStatus>('Loading...');
     const [items, setItems] = useState<IItem[]>([]);
     const [currentItem, setCurrentItem] = useState<IItem | undefined>(undefined);
@@ -237,8 +240,10 @@ export function CrosswordMemorizer() {
         if (AppSessionData.prop('PlCfg_ReverseOrder')) {
             sbItem = { text: item.a.text, lang: item.a.lang };
         }
+        isQuestionSpeakingRef.current = true;
         setIsSpeaking(true);
         SayText.addMessage(sbItem, () => {
+            isQuestionSpeakingRef.current = false;
             setIsSpeaking(false);
         });
     };
@@ -248,6 +253,8 @@ export function CrosswordMemorizer() {
             if (AppSessionData.prop('PlCfg_ReverseOrder')) {
                 sbItem = { text: currentItem.q.text, lang: currentItem.q.lang };
             }
+            // Starting an answer supersedes a possible question utterance.
+            isQuestionSpeakingRef.current = false;
             setIsSpeaking(true);
             SayText.addMessage(sbItem, () => {
                 setIsSpeaking(false);
@@ -373,7 +380,20 @@ export function CrosswordMemorizer() {
                     if (currentItem) {
                         UpdateItemRating(currentItem, true);
                     }
-                    sayAnswer(() => goNextItem());
+                    if (isQuestionSpeakingRef.current) {
+                        // The answer has already been entered in full. Do not
+                        // wait for the question: stop it and advance now.
+                        // cancelAllMessages also invalidates delayed callbacks
+                        // from the previous utterance.
+                        SayText.cancelAllMessages();
+                        isQuestionSpeakingRef.current = false;
+                        setIsSpeaking(false);
+                        goNextItem();
+                    } else {
+                        // Once the question has finished, preserve the normal
+                        // flow: say the answer, then advance.
+                        sayAnswer(() => goNextItem());
+                    }
                 }} />
         </div>
     );

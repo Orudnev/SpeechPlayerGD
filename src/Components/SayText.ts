@@ -7,6 +7,10 @@ class SayTextClass {
     selectedEnVoice: SpeechSynthesisVoice | undefined = undefined;
     selectedRuVoice: SpeechSynthesisVoice | undefined = undefined;
     initCompleted = false;
+    // Each new request supersedes every earlier utterance and its callbacks.
+    // SpeechSynthesis can dispatch `error`/`end` after cancel(), so those
+    // callbacks must not be allowed to start or complete an obsolete request.
+    private requestVersion = 0;
   
     constructor() {
       this.init();
@@ -64,14 +68,20 @@ class SayTextClass {
     }
   
     addMessage(msg: ISubItem, completeHandler?: (evt: any) => void) {
+      const requestVersion = ++this.requestVersion;
       if (!this.initCompleted) {
-        setTimeout(() => this.addMessage(msg, completeHandler), 500);
+        setTimeout(() => {
+          if (requestVersion === this.requestVersion) {
+            this.addMessageImpl(msg, completeHandler, requestVersion);
+          }
+        }, 500);
         return;
       }
-      this.addMessageImpl(msg, completeHandler);
+      this.addMessageImpl(msg, completeHandler, requestVersion);
     }
   
-    addMessageImpl(msg: ISubItem, completeHandler?: (evt: any) => void, isRetry = false) {
+    addMessageImpl(msg: ISubItem, completeHandler: ((evt: any) => void) | undefined, requestVersion: number, isRetry = false) {
+      if (requestVersion !== this.requestVersion) return;
       const speachMsg = new SpeechSynthesisUtterance(msg.text);
       let selectedVoice: SpeechSynthesisVoice | undefined;
   
@@ -91,19 +101,26 @@ class SayTextClass {
   
       // Error listener: Log issues (key for diagnosing Russian failures).
       speachMsg.addEventListener('error', (evt) => {
+        if (requestVersion !== this.requestVersion) return;
         console.error('Speech error for', msg.lang, ':', (evt as SpeechSynthesisErrorEvent).error);
-        if (!isRetry && msg.lang === 'ru-RU') {
+        const error = (evt as SpeechSynthesisErrorEvent).error;
+        // `cancel()` intentionally reports these outcomes in some browsers.
+        // They are not voice failures and must never resurrect an old phrase.
+        const wasCancelled = error === 'interrupted' || error === 'canceled';
+        if (!isRetry && !wasCancelled && msg.lang === 'ru-RU') {
           // Retry once with forced lang fallback (no voice set).
           console.log('Retrying Russian without specific voice...');
           const retryMsg = { ...msg };
-          this.addMessageImpl(retryMsg, completeHandler, true);
+          this.addMessageImpl(retryMsg, completeHandler, requestVersion, true);
         }
       });
   
       if (completeHandler) {
         const hndlr = (evt: any) => {
           speachMsg.removeEventListener('end', hndlr);
-          completeHandler(evt);
+          if (requestVersion === this.requestVersion) {
+            completeHandler(evt);
+          }
         };
         speachMsg.addEventListener('end', hndlr);
       }
@@ -116,6 +133,7 @@ class SayTextClass {
     }
   
     cancelAllMessages() {
+      this.requestVersion++;
       window.speechSynthesis.cancel();
     }
   
