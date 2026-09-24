@@ -68,9 +68,9 @@ const InputWord = forwardRef<InputWordsMethods, InputWordProps>((props, ref) => 
 
   useImperativeHandle(ref, () => ({
     loadNewItem(questionStr: string, answerStr: string) {
-      if(answerStr.includes("((")){
+      if (answerStr.includes("((")) {
         //отрезаем комментарий
-        answerStr = answerStr.substring(0,answerStr.indexOf("(("));
+        answerStr = answerStr.substring(0, answerStr.indexOf("(("));
       }
       const initialWords = answerStr.trim().split(' ').map(word =>
         word.split('').map(char => {
