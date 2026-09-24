@@ -47,13 +47,13 @@ function SendItemRatingsToServer(itm: IItem) {
     waw.UpdateRows(itm.SheetName, [row]);
 }
 
-function SortRowsDfclt(a: any, b: any){
+function SortRowsDfclt(a: any, b: any) {
     if (a.r && b.r) {
-        const da = !a.r.Dfclty? 3 : a.r.Dfclty;
-        const db = !b.r.Dfclty? 3 : b.r.Dfclty;
-        const result =  db - da;
-        if (result === 0){
-            return SortRows(a,b);
+        const da = !a.r.Dfclty ? 3 : a.r.Dfclty;
+        const db = !b.r.Dfclty ? 3 : b.r.Dfclty;
+        const result = db - da;
+        if (result === 0) {
+            return SortRows(a, b);
         }
         return result;
     }
@@ -99,6 +99,7 @@ export function CrosswordMemorizer() {
     const [isSettingsMode, setIsSettingsMode] = useState<boolean>(false);
     const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
     const [isMicrophoneOn, setIsMicrophoneOn] = useState<boolean>(false);
+    const [reloadCount, setReloadCount] = useState(0);
     let classBtnStartStop = status === 'Stopped' || status === 'Loading...' ? 'img-btn img-power-off' : 'img-btn img-power-on';
     const handleBtnStartStopClick = () => {
         if (status === 'Started') {
@@ -150,11 +151,11 @@ export function CrosswordMemorizer() {
                 //1. отфильтровать элементы которые не использовались более minInterval
                 return itm.r && dtnow - itm.r.ts > minInterval;
             })
-            const hasDfcltyProp = items && items.length>0 && items[0].r && items[0].r && items[0].r.hasOwnProperty('Dfclty');
-            if(nextItems.length > 0){
-                nextItems = nextItems.sort(hasDfcltyProp?SortRowsDfclt:SortRows);
+            const hasDfcltyProp = items && items.length > 0 && items[0].r && items[0].r && items[0].r.hasOwnProperty('Dfclty');
+            if (nextItems.length > 0) {
+                nextItems = nextItems.sort(hasDfcltyProp ? SortRowsDfclt : SortRows);
             } else {
-                if(hasDfcltyProp){
+                if (hasDfcltyProp) {
                     nextItems = items.sort(SortRowsDfclt);
                 }
             }
@@ -213,18 +214,29 @@ export function CrosswordMemorizer() {
         //setStatus('Stopped');
         //return;
         const resp = await waw.GetAllRows("All");
+        let result: any = undefined;
         if (resp.status === "ok") {
             const allRows = resp.data;
             if (AppSessionData.prop('PlCfg_SelectItemsMode') === 'Tasks') {
                 setItems(allRows);
+                result = allRows;
             } else {
                 const selectedSheetList = AppSessionData.prop('PlCfg_DataSheetNames');
-                const result = allRows.filter((row: any) => selectedSheetList.find((shName: string) => shName == row.SheetName));
+                result = allRows.filter((row: any) => selectedSheetList.find((shName: string) => shName == row.SheetName));
                 setItems(result);
             }
         }
+        result = [];
+        if (result.length > 0) {
+            setReloadCount(0);
+            setStatus('Stopped');
+        } else {
+            setReloadCount(reloadCount + 1);
+            setTimeout(() => {
+                reloadData();
+            }, 5000);
+        }
         // Do not leave the page in Loading state after a timeout/network error.
-        setStatus('Stopped');
     };
     useEffect(() => {
         reloadData();
@@ -303,7 +315,7 @@ export function CrosswordMemorizer() {
     const imgUrlPrefix = "https://sptrainer-img.olrudnev.workers.dev/";
     return (
         <div className='ph-mem'>
-            {status == 'Loading...' && <LoadingIndicator />}
+            {status == 'Loading...' && <LoadingIndicator attemptNumber={reloadCount} />}
             {status !== 'Loading...' && (
                 <div className='ph-mem__toolbar' >
                     <button className="toolbar-button" onClick={() => handleBtnStartStopClick()}>
@@ -367,7 +379,7 @@ export function CrosswordMemorizer() {
             {status !== 'Loading...' && <GetPromptButton items={items} />}
             {status !== 'Loading...' && currentItem && currentItem.Img && (
                 <div className="img-gallery">
-                    {currentItem.Img.map((imgFileName,idx) => {
+                    {currentItem.Img.map((imgFileName, idx) => {
                         const imgUrl = imgUrlPrefix + imgFileName;
                         return (
                             <img key={idx} className="img-gallery__item" src={imgUrl} />
@@ -441,12 +453,23 @@ export function GetPromptButton({ items }: { items: IItem[] }) {
     return null;
 }
 
-export function LoadingIndicator(){
-    const [seconds,setSeconds] = useState(waw.httpRequestTimeout/1000);
-    if(seconds > 0){
-        setTimeout(()=>setSeconds(seconds -1),1000);
+export function LoadingIndicator({ attemptNumber }: { attemptNumber: number }) {
+    const initialValue = waw.httpRequestTimeout / 1000;
+    const [seconds, setSeconds] = useState(initialValue);
+    const [prevAttemptNumber, setPrevAttemptNumber] = useState(attemptNumber);
+    const [attemptText, setAttemptText] = useState("");
+    if (attemptNumber > prevAttemptNumber) {
+        setPrevAttemptNumber(attemptNumber);
+        setSeconds(initialValue);
+        setAttemptText(`Load failed. Attempt #:${attemptNumber}`);
+    } 
+    if (attemptNumber < prevAttemptNumber){
+        return (<></>);
     }
-    return(
-        <div>...Loading {seconds}</div>
+    if (seconds > 0) {
+        setTimeout(() => setSeconds(seconds - 1), 1000);
+    }
+    return (
+        <div>...Loading {seconds} {attemptText}</div>
     );
 }
