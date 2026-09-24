@@ -99,7 +99,7 @@ export function CrosswordMemorizer() {
     const [isSettingsMode, setIsSettingsMode] = useState<boolean>(false);
     const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
     const [isMicrophoneOn, setIsMicrophoneOn] = useState<boolean>(false);
-    const [reloadCount, setReloadCount] = useState(0);
+    const [reloadCount, setReloadCount] = useState(-1);
     let classBtnStartStop = status === 'Stopped' || status === 'Loading...' ? 'img-btn img-power-off' : 'img-btn img-power-on';
     const handleBtnStartStopClick = () => {
         if (status === 'Started') {
@@ -226,21 +226,20 @@ export function CrosswordMemorizer() {
                 setItems(result);
             }
         }
-        result = [];
-        if (result.length > 0) {
-            setReloadCount(0);
+        if (result && result.length > 0) {
+            setReloadCount(1);
             setStatus('Stopped');
         } else {
-            setReloadCount(reloadCount + 1);
-            setTimeout(() => {
-                reloadData();
-            }, 5000);
+            const newReloadCount = reloadCount === -1 ? 2 : reloadCount + 1;
+            setReloadCount(newReloadCount);
         }
         // Do not leave the page in Loading state after a timeout/network error.
     };
     useEffect(() => {
-        reloadData();
-    }, []);
+        if (reloadCount !== 1) {
+            reloadData();
+        }
+    }, [reloadCount]);
     const currLang = AppSessionData.prop('PlCfg_ReverseOrder') ? "ru-RU" : "en-US";
     const selectItemsMode = AppSessionData.prop('PlCfg_SelectItemsMode');
     const selectedTaskName = AppSessionData.prop('PlCfg_SelectedTask');
@@ -404,7 +403,11 @@ export function CrosswordMemorizer() {
                     } else {
                         // Once the question has finished, preserve the normal
                         // flow: say the answer, then advance.
-                        sayAnswer(() => goNextItem());
+                        if (AppSessionData.prop('PlCfg_SayAnswer')) {
+                            sayAnswer(() => goNextItem());
+                        } else {
+                            goNextItem();
+                        }
                     }
                 }} />
         </div>
@@ -458,17 +461,25 @@ export function LoadingIndicator({ attemptNumber }: { attemptNumber: number }) {
     const [seconds, setSeconds] = useState(initialValue);
     const [prevAttemptNumber, setPrevAttemptNumber] = useState(attemptNumber);
     const [attemptText, setAttemptText] = useState("");
+
+    useEffect(() => {
+        if (seconds <= 0 || attemptNumber !== prevAttemptNumber) {
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            setSeconds(value => Math.max(0, value - 1));
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [seconds, attemptNumber, prevAttemptNumber]);
+
     if (attemptNumber > prevAttemptNumber) {
         setPrevAttemptNumber(attemptNumber);
         setSeconds(initialValue);
-        setAttemptText(`Load failed. Attempt #:${attemptNumber}`);
-    } 
-    if (attemptNumber < prevAttemptNumber){
-        return (<></>);
+        setAttemptText(`Load failed. Attempt #${attemptNumber}`);
     }
-    if (seconds > 0 && attemptNumber === prevAttemptNumber) {
-        setTimeout(() => setSeconds(seconds - 1), 1000);
-    }
+
     return (
         <div>...Loading {seconds} {attemptText}</div>
     );
