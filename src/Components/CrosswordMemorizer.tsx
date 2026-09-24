@@ -296,7 +296,7 @@ export function CrosswordMemorizer() {
     const imgUrlPrefix = "https://sptrainer-img.olrudnev.workers.dev/";
     return (
         <div className='ph-mem'>
-            {status == 'Loading...' && <div>loading...</div>}
+            {status == 'Loading...' && <LoadingIndicator />}
             {status !== 'Loading...' && (
                 <div className='ph-mem__toolbar' >
                     <button className="toolbar-button" onClick={() => handleBtnStartStopClick()}>
@@ -419,4 +419,14 @@ export function GetPromptButton({ items }: { items: IItem[] }) {
         );
     }
     return null;
+}
+
+export function LoadingIndicator(){
+    const [seconds,setSeconds] = useState(waw.httpRequestTimeout/1000);
+    if(seconds > 0){
+        setTimeout(()=>setSeconds(seconds -1),1000);
+    }
+    return(
+        <div>...Loading {seconds}</div>
+    );
 }
