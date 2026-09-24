@@ -466,7 +466,7 @@ export function LoadingIndicator({ attemptNumber }: { attemptNumber: number }) {
     if (attemptNumber < prevAttemptNumber){
         return (<></>);
     }
-    if (seconds > 0) {
+    if (seconds > 0 && attemptNumber === prevAttemptNumber) {
         setTimeout(() => setSeconds(seconds - 1), 1000);
     }
     return (
