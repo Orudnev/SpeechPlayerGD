@@ -1,15 +1,17 @@
 {
   "files": {
-    "main.css": "/SpeechPlayerGD/static/css/main.e8065a89.css",
-    "main.js": "/SpeechPlayerGD/static/js/main.5a703512.js",
+    "main.css": "/SpeechPlayerGD/static/css/main.aa9d9dd9.css",
+    "main.js": "/SpeechPlayerGD/static/js/main.4c1d0603.js",
     "static/media/keypress.mp3": "/SpeechPlayerGD/static/media/keypress.e9ada6c8fd154996e0aa.mp3",
     "static/media/exit.svg": "/SpeechPlayerGD/static/media/exit.fcf989014fc61507a051.svg",
     "index.html": "/SpeechPlayerGD/index.html",
-    "main.e8065a89.css.map": "/SpeechPlayerGD/static/css/main.e8065a89.css.map",
-    "main.5a703512.js.map": "/SpeechPlayerGD/static/js/main.5a703512.js.map"
+    "static/media/reload-error.svg": "/SpeechPlayerGD/static/media/reload-error.5203da966796a38cf559.svg",
+    "static/media/reload.svg": "/SpeechPlayerGD/static/media/reload.7d556c19a1d1cd39864d.svg",
+    "main.aa9d9dd9.css.map": "/SpeechPlayerGD/static/css/main.aa9d9dd9.css.map",
+    "main.4c1d0603.js.map": "/SpeechPlayerGD/static/js/main.4c1d0603.js.map"
   },
   "entrypoints": [
-    "static/css/main.e8065a89.css",
-    "static/js/main.5a703512.js"
+    "static/css/main.aa9d9dd9.css",
+    "static/js/main.4c1d0603.js"
   ]
 }
