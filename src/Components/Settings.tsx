@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AppSessionData, TAppSesstionDataProps } from './AppData';
 import Switch from './Switch/Switch';
 import DropDownBox, { IDropDownProps } from './DropDownBox/DropDownBox';
@@ -92,6 +92,8 @@ export function Settings(props: any) {
     const [selectItemsMode, setSelectItemsMode] = useState(AppSessionData.prop('PlCfg_SelectItemsMode'));
     const [taskNames, setTaskNames] = useState<string[]>([]);
     const [selectedTaskName, setSelectedTaskName] = useState(AppSessionData.prop('PlCfg_SelectedTask'));
+    const [reloadState, setReloadState] = useState<'reload' | 'loading' | 'error'>('reload');
+    const isReloadingRef = useRef(false);
 
     useEffect(() => {
         let selectedSheetList = AppSessionData.cachedProp('CP_SelectedSheetNames');
@@ -125,10 +127,45 @@ export function Settings(props: any) {
         setSelectedSheetListChanged(true);
     };
 
+    const handleReloadClick = async () => {
+        if (reloadState === 'error') {
+            setReloadState('reload');
+            return;
+        }
+        if (isReloadingRef.current) {
+            return;
+        }
+
+        isReloadingRef.current = true;
+        setReloadState('loading');
+        try {
+            const response = await waw.GetAllRows(true);
+            setReloadState(response.status === 'ok' ? 'reload' : 'error');
+        } catch {
+            setReloadState('error');
+        } finally {
+            isReloadingRef.current = false;
+        }
+    };
+
+    const reloadImageClass = reloadState === 'loading'
+        ? 'img-btn img-reload-spinner'
+        : reloadState === 'error'
+            ? 'img-btn img-reload-error'
+            : 'img-btn img-reload';
+
     return (
         <div className='ph-mem'>
             <button className="toolbar-button" onClick={() => { props.onExit(selectedSheetListChanged) }}>
                 <div className="img-btn img-exit-tomain" />
+            </button>
+            <button
+                className="toolbar-button"
+                onClick={handleReloadClick}
+                disabled={reloadState === 'loading'}
+                aria-label={reloadState === 'error' ? 'Reset reload error' : 'Reload items'}
+            >
+                <div className={reloadImageClass} />
             </button>
             <SettingsBoolItem labelText='Say question' propId={'PlCfg_SayQuestion'} />
             <SettingsBoolItem labelText='Say answer' propId={'PlCfg_SayAnswer'} />

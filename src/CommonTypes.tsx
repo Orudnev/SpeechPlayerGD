@@ -19,7 +19,7 @@ export interface IResult {
   Aw: number;      //Кол-во успешных ответов письменных (прямых)
   Dfclty?:number;    //Трудность карточки установленная вручную
 }
-
+ 
 export interface IItem {  
   SheetName: string;  //имя набора слов/фраз
   uid:string;         //уникальный идентификатор записи

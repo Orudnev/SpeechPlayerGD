@@ -213,7 +213,7 @@ export function CrosswordMemorizer() {
         setStatus('Loading...');
         //setStatus('Stopped');
         //return;
-        const resp = await waw.GetAllRows("All");
+        const resp = await waw.GetAllRows();
         let result: any = undefined;
         if (resp.status === "ok") {
             const allRows = resp.data;

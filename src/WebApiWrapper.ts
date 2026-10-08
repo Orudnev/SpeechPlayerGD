@@ -51,8 +51,23 @@ export function GetTaskList(handler:(response:IApiResponse)=>void){
 }
 
 export const httpRequestTimeout = 25_000;
+const allRowsStorageKey = 'items';
 
 export async function GetAllRows(forceReload:boolean = false):Promise<IApiResponse>{
+    if (!forceReload) {
+        try {
+            const cachedItems = localStorage.getItem(allRowsStorageKey);
+            if (cachedItems) {
+                const items = JSON.parse(cachedItems);
+                if (Array.isArray(items)) {
+                    return {status:'ok', data:items};
+                }
+            }
+        } catch (err) {
+            console.warn('Unable to read cached GetAllRows items', err);
+        }
+    }
+
     try {
         const response = await axios<IApiResponse>({
         url:webApiBaseUrl,
@@ -89,6 +104,13 @@ export async function GetAllRows(forceReload:boolean = false):Promise<IApiRespon
                 Img:getImg(itm.Img)
             }));
             apiResponse.data = items;
+            try {
+                localStorage.setItem(allRowsStorageKey, JSON.stringify(items));
+            } catch (err) {
+                // A storage error (for example, quota exceeded) must not invalidate
+                // an otherwise successful API response.
+                console.warn('Unable to cache GetAllRows items', err);
+            }
         } else {
             console.warn('GetAllRows API returned an error', apiResponse);
         }
