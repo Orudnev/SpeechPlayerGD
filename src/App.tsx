@@ -48,7 +48,7 @@ class AppGlobalClass {
   }
 
   async getAllRows(): Promise<IApiResponse> {
-    const response = await GetAllRows("All");
+    const response = await GetAllRows();
     if (response.status === "ok") {
       response.data.sort(SortRows);
     }

@@ -52,12 +52,12 @@ export function GetTaskList(handler:(response:IApiResponse)=>void){
 
 export const httpRequestTimeout = 25_000;
 
-export async function GetAllRows(shName:string):Promise<IApiResponse>{
+export async function GetAllRows(forceReload:boolean = false):Promise<IApiResponse>{
     try {
         const response = await axios<IApiResponse>({
         url:webApiBaseUrl,
         method:'GET',
-        params:{method:'getAllRows',sheetName:shName},
+        params:{method:'getAllRows',sheetName:"All"},
         // Axios otherwise waits indefinitely (its default timeout is 0).
         timeout:httpRequestTimeout,
         timeoutErrorMessage:'GetAllRows request timed out after 25 seconds'
