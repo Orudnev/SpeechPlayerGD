@@ -17,7 +17,41 @@ export interface IResult {
   // fsa: number;   //forward (question->answer) succeded answers
   // rsa: number;   //reverse (answer->question) succeded answers
   Aw: number;      //Кол-во успешных ответов письменных (прямых)
-  Dfclty?:number;    //Трудность карточки установленная вручную
+  Dfclty?:string;    //Трудность карточки: "Forward/Reverse"
+}
+
+export const DFLT_DFCLTY = 3;
+
+function parseDifficultyValue(value: unknown): number {
+  const parsedValue = Number(value);
+  return Number.isInteger(parsedValue) && parsedValue >= 1 && parsedValue <= 3
+    ? parsedValue
+    : DFLT_DFCLTY;
+}
+
+/** Returns the Forward and Reverse difficulty values, including legacy formats. */
+export function getDifficultyValues(difficulty: unknown): [number, number] {
+  if (difficulty === undefined || difficulty === null || difficulty === '') {
+    return [DFLT_DFCLTY, DFLT_DFCLTY];
+  }
+
+  const [forward, reverse] = String(difficulty).split('/');
+  return [parseDifficultyValue(forward), reverse === undefined
+    ? DFLT_DFCLTY
+    : parseDifficultyValue(reverse)];
+}
+
+export function getDifficultyForMode(difficulty: unknown, reverseOrder: boolean): number {
+  const [forward, reverse] = getDifficultyValues(difficulty);
+  return reverseOrder ? reverse : forward;
+}
+
+export function setDifficultyForMode(difficulty: unknown, value: number, reverseOrder: boolean): string {
+  const [forward, reverse] = getDifficultyValues(difficulty);
+  const normalizedValue = parseDifficultyValue(value);
+  return reverseOrder
+    ? `${forward}/${normalizedValue}`
+    : `${normalizedValue}/${reverse}`;
 }
  
 export interface IItem {  

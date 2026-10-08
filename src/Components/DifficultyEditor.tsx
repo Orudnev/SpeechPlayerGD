@@ -1,5 +1,6 @@
 import React, { useReducer, useEffect, useState, useRef } from 'react';
-import { IItem } from '../CommonTypes';
+import { getDifficultyForMode, IItem } from '../CommonTypes';
+import { AppSessionData } from './AppData';
 
 
 export type TDifficultyEditorProps = {
@@ -11,7 +12,10 @@ export const DifficultyEditor: React.FC<TDifficultyEditorProps> = ({
   item,
   onChange,
 }) => {
-  const ratingValue = (!item.r || !item.r.Dfclty || item.r.Dfclty === 0) ? 3 : item.r.Dfclty;  
+  const ratingValue = getDifficultyForMode(
+    item.r?.Dfclty,
+    Boolean(AppSessionData.prop('PlCfg_ReverseOrder'))
+  );
   const getDescription = ()=>{
     switch (ratingValue) {
         case 3:

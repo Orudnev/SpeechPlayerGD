@@ -1,5 +1,5 @@
 import React, { useReducer, useEffect, useState, useRef } from 'react';
-import { IItem, ISubItem, TCrosswordPageStatus } from '../CommonTypes';
+import { getDifficultyForMode, IItem, ISubItem, setDifficultyForMode, TCrosswordPageStatus } from '../CommonTypes';
 import { AppSessionData } from './AppData';
 import * as waw from '../WebApiWrapper';
 import InputWord, { InputWordsMethods } from './CrossWordInput/InputWord';
@@ -49,8 +49,9 @@ function SendItemRatingsToServer(itm: IItem) {
 
 function SortRowsDfclt(a: any, b: any) {
     if (a.r && b.r) {
-        const da = !a.r.Dfclty ? 3 : a.r.Dfclty;
-        const db = !b.r.Dfclty ? 3 : b.r.Dfclty;
+        const reverseOrder = Boolean(AppSessionData.prop('PlCfg_ReverseOrder'));
+        const da = getDifficultyForMode(a.r.Dfclty, reverseOrder);
+        const db = getDifficultyForMode(b.r.Dfclty, reverseOrder);
         const result = db - da;
         if (result === 0) {
             return SortRows(a, b);
@@ -353,7 +354,11 @@ export function CrosswordMemorizer() {
                                 return prevItems.map(itm => {
                                     if (itm.uid === currentItem.uid) {
                                         if (itm.r) {
-                                            itm.r.Dfclty = difficulty;
+                                            itm.r.Dfclty = setDifficultyForMode(
+                                                itm.r.Dfclty,
+                                                difficulty,
+                                                Boolean(AppSessionData.prop('PlCfg_ReverseOrder'))
+                                            );
                                         }
                                     }
                                     return itm;
