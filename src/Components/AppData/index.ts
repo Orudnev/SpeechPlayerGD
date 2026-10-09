@@ -55,6 +55,7 @@ export interface IAppSession{
     PlCfg_SelectItemsMode:string;
     PlCfg_SelectedTask:string;
     PlCfg_SelectedTaskItemUids:string[]|undefined;
+    PlCfg_SelectedDfcltyRatings:number[]|undefined;
 }
 
 
@@ -67,7 +68,8 @@ const AppSessionDataDefaultValues:IAppSession = {
     PlCfg_DataSheetNames:["Verbs"],
     PlCfg_SelectItemsMode:"Data sheets",
     PlCfg_SelectedTask:"Demo task 1",
-    PlCfg_SelectedTaskItemUids:[]
+    PlCfg_SelectedTaskItemUids:[],
+    PlCfg_SelectedDfcltyRatings:[]
 }
 
 const CashedProps = {

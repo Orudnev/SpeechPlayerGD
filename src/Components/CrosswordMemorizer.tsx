@@ -69,8 +69,25 @@ export function SortRows(a: any, b: any) {
             return a.r.lcnt - b.r.lcnt;
         }
 
+        //2a Сортировать по времени последнего доступа
+        let result = undefined;
+        if(!a.r.ts && !b.r.ts){
+            result = 0;
+        } else {
+            if(!a.r.ts){
+                return -1;
+            }
+            if(!b.r.ts){
+                return 1;
+            }
+            result = a.r.ts - b.r.ts;
+            if(result !== 0){
+                return result;
+            }
+        }
+
         //3. Сортировать по критерию ошибки/количество просмотров
-        let result = b.r.Aef - a.r.Aef;
+        result = b.r.Aef - a.r.Aef;
         if (reverseOrder) {
             result = b.r.Aer - a.r.Aer;
         }
@@ -143,7 +160,7 @@ export function CrosswordMemorizer() {
         if (AppSessionData.prop('PlCfg_SelectItemsMode') === 'Tasks') {
             newCurrItem = getNextTaskItem();
         } else {
-            const minIntervalSecond = 600;
+            const minIntervalSecond = 60;
             const minInterval = minIntervalSecond * 1000;
             let newestItems = items.filter(itm => {
                 return itm.r && dtnow - itm.r.ts <= minInterval;
@@ -159,6 +176,18 @@ export function CrosswordMemorizer() {
                 if (hasDfcltyProp) {
                     nextItems = items.sort(SortRowsDfclt);
                 }
+            }
+
+            //Фильтруем по рейтингам трудности                
+            const str = AppSessionData.prop('PlCfg_SelectedDfcltyRatings');
+            const storedRatings = Array.isArray(str) ? str : [];
+            if(storedRatings.length>0){
+                nextItems = nextItems.filter(itm=>{
+                    if(itm.r && itm.r.Dfclty){
+                        return storedRatings.find((cr)=>cr === itm.r?.Dfclty);
+                    }
+                    return false;                    
+                })
             }
 
             if (nextItems.length === 0) {

@@ -18,6 +18,8 @@ export const DifficultyEditor: React.FC<TDifficultyEditorProps> = ({
   );
   const getDescription = ()=>{
     switch (ratingValue) {
+        case 4:
+            return {text:"Forgot+", style:{backgroundColor:'red',color:'white'}};
         case 3:
             return {text:"Forgot", style:{backgroundColor:'red',color:'white'}};
         case 2:
@@ -32,7 +34,7 @@ export const DifficultyEditor: React.FC<TDifficultyEditorProps> = ({
     <div className="difficulty-editor">
       <div className="difficulty-editor__image"></div>
       <div className="difficulty-editor__buttons">
-        {[3, 2, 1].map((rating) => (
+        {[4, 3, 2, 1].map((rating) => (
           <button 
             key={rating}
             type="button"

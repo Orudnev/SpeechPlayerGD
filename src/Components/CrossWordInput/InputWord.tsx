@@ -192,6 +192,9 @@ const InputWord = forwardRef<InputWordsMethods, InputWordProps>((props, ref) => 
 
   let msg = hasHiddenChars ? message : 'Все символы раскрыты!';
   // if (!props.answerString) msg = "";
+  if(hasHiddenChars == false){
+    let s = 1;
+  }
   let cellSize = 6;
   let cellFondSizeClass = "input-word__cellFsize";
   let longestWordInSymbols = words.reduce((maxLength, currentRow) => Math.max(maxLength, currentRow?.length || 0), 0);

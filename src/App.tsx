@@ -18,11 +18,9 @@ import { SortRows } from './Components/CrosswordMemorizer';
 
 class AppGlobalClass {
   private navfunc: NavigateFunction | undefined = undefined;
-  signalR: any;
   //signalRGate:SRGateClass|undefined=undefined;
   prevAction: any = null;
   dispatchFunc: any = undefined;
-  hwConnectorPort: string = "";
   constructor() {
     this.getState = this.getState.bind(this);
     this.navigate = this.navigate.bind(this);

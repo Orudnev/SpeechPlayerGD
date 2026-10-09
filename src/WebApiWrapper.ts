@@ -134,7 +134,65 @@ export async function GetAllRows(forceReload:boolean = false):Promise<IApiRespon
 
 
 
+function updateCachedRows(sheetName:string, rows:any[]): void {
+    try {
+        const cachedItemsJson = localStorage.getItem(allRowsStorageKey);
+        if (!cachedItemsJson) {
+            return;
+        }
+
+        const cachedItems = JSON.parse(cachedItemsJson);
+        if (!Array.isArray(cachedItems)) {
+            return;
+        }
+
+        const hasProperty = (row:any, property:string) =>
+            Object.prototype.hasOwnProperty.call(row, property);
+        let cacheChanged = false;
+
+        rows.forEach((row:any) => {
+            const cachedItem = cachedItems.find((item:any) =>
+                item.SheetName === sheetName && item.uid === row.Uid
+            );
+            if (!cachedItem) {
+                return;
+            }
+
+            if (hasProperty(row, 'En')) cachedItem.a.text = row.En;
+            if (hasProperty(row, 'Ru')) cachedItem.q.text = row.Ru;
+
+            const ratingFields:{[key:string]:string} = {
+                Lcnt:'lcnt', Asf:'Asf', Asr:'Asr', Aer:'Aer', Aef:'Aef', Aw:'Aw', Ts:'ts'
+            };
+            const hasRatingUpdate = Object.keys(ratingFields).some(field => hasProperty(row, field))
+                || hasProperty(row, 'Dfclty');
+            if (hasRatingUpdate) {
+                cachedItem.r = cachedItem.r || {};
+                Object.entries(ratingFields).forEach(([serverField, cachedField]) => {
+                    if (hasProperty(row, serverField)) {
+                        cachedItem.r[cachedField] = row[serverField];
+                    }
+                });
+                if (hasProperty(row, 'Dfclty')) {
+                    cachedItem.r.Dfclty = row.Dfclty === undefined || row.Dfclty === null
+                        ? undefined
+                        : String(row.Dfclty);
+                }
+            }
+            cacheChanged = true;
+        });
+
+        if (cacheChanged) {
+            localStorage.setItem(allRowsStorageKey, JSON.stringify(cachedItems));
+        }
+    } catch (err) {
+        // Updating the local cache must not prevent the HTTP update.
+        console.warn('Unable to update cached rows', err);
+    }
+}
+
 export function UpdateRows(shName:string,rows:any[]){
+    updateCachedRows(shName, rows);
     const encoder = new TextEncoder();
     const encodedBytes:Uint8Array = encoder.encode(JSON.stringify(rows));
     let binaryString:string = "";    

@@ -4,6 +4,7 @@ import Switch from './Switch/Switch';
 import DropDownBox, { IDropDownProps } from './DropDownBox/DropDownBox';
 import { AppPages, filterUniqueByProperty } from '../CommonTypes';
 import MultipleSelectChip from './MultipleSelectChip';
+import { DifficultySelector } from './DifficultySelector';
 import * as waw from '../WebApiWrapper';
 
 export interface ISettingsBoolItemProps {
@@ -172,6 +173,10 @@ export function Settings(props: any) {
             <SettingsBoolItem labelText='Listen answer' propId={'PlCfg_ListenAnswer'} />
             <SettingsDropDownItem labelText='Default page' propId='PlCfg_DefaultPageTitle' items={filterUniqueByProperty(AppPages, 'title')} selectedItem={''} onItemSelected={() => { }} displayMember='title' />
             <SettingsBoolItem labelText='Reverse (question/answer)' propId={'PlCfg_ReverseOrder'} />
+            <div className="settings-bool-item">
+                <div>Difficulty rating filter</div>
+                <DifficultySelector />
+            </div>
             <div className="settings-bool-item">
                 <div>Select items mode</div>
                 <div>

@@ -24,7 +24,7 @@ export const DFLT_DFCLTY = 3;
 
 function parseDifficultyValue(value: unknown): number {
   const parsedValue = Number(value);
-  return Number.isInteger(parsedValue) && parsedValue >= 1 && parsedValue <= 3
+  return Number.isInteger(parsedValue) && parsedValue >= 1 && parsedValue <= 4
     ? parsedValue
     : DFLT_DFCLTY;
 }
