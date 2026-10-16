@@ -184,7 +184,7 @@ export function CrosswordMemorizer() {
             if(storedRatings.length>0){
                 nextItems = nextItems.filter(itm=>{
                     if(itm.r && itm.r.Dfclty){
-                        return storedRatings.find((cr)=>cr === itm.r?.Dfclty);
+                        return storedRatings.some((cr)=>cr == itm.r?.Dfclty);
                     }
                     return false;                    
                 })
