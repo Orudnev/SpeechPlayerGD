@@ -182,9 +182,11 @@ export function CrosswordMemorizer() {
             const str = AppSessionData.prop('PlCfg_SelectedDfcltyRatings');
             const storedRatings = Array.isArray(str) ? str : [];
             if(storedRatings.length>0){
+                const reverseOrder = AppSessionData.prop('PlCfg_ReverseOrder')
                 nextItems = nextItems.filter(itm=>{
                     if(itm.r && itm.r.Dfclty){
-                        return storedRatings.some((cr)=>cr == itm.r?.Dfclty);
+                        const itmDfclty = getDifficultyForMode(itm.r.Dfclty,reverseOrder);
+                        return storedRatings.some((cr)=>cr == itmDfclty);
                     }
                     return false;                    
                 })
